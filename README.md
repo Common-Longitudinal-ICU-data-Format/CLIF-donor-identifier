@@ -1,20 +1,15 @@
-# *CLIF Project Title*
+# *CLIF Epidemiology of Potential and Actual Deceased Organ Donors*
 
 ## CLIF VERSION 
 
-[major].[minor]
+2.1.0
 
 ## Objective
 
-*Describe the project objective*
+*Describe the epidemiology of deceased organ donation in the CLIF consortiume*
 
 ## Required CLIF tables and fields
 
-Please refer to the online [CLIF data dictionary](https://clif-consortium.github.io/website/data-dictionary.html), [ETL tools](https://github.com/clif-consortium/CLIF/tree/main/etl-to-clif-resources), and [specific table contacts](https://github.com/clif-consortium/CLIF?tab=readme-ov-file#relational-clif) for more information on constructing the required tables and fields. 
-
-*List all required tables for the project here, and provide a brief rationale for why they are required.*
-
-Example:
 The following tables are required:
 1. **patient**: `patient_id`, `race_category`, `ethnicity_category`, `sex_category`
 2. **hospitalization**: `patient_id`, `hospitalization_id`, `admission_dttm`, `discharge_dttm`, `age_at_admission`
@@ -25,6 +20,8 @@ The following tables are required:
 5. **medication_admin_continuous**: `hospitalization_id`, `admin_dttm`, `med_name`, `med_category`, `med_dose`, `med_dose_unit`
    - `med_category` = "norepinephrine", "epinephrine", "phenylephrine", "vasopressin", "dopamine", "angiotensin", "nicardipine", "nitroprusside", "clevidipine", "cisatracurium"
 6. **respiratory_support**: `hospitalization_id`, `recorded_dttm`, `device_category`, `mode_category`, `tracheostomy`, `fio2_set`, `lpm_set`, `resp_rate_set`, `peep_set`, `resp_rate_obs`
+
+TBD
 
 ## Cohort identification
 *Describe study cohort inclusion and exclusion criteria here*
@@ -44,25 +41,7 @@ Follow instructions in the [config/README.md](config/README.md) file for detaile
 
 *Describe the steps to setup the project environment.*
 
-Example for R:
-Run `00_renv_restore.R` in the [code](code/templates/R) to set up the project environment
-
-Example for Python:
-Open your terminal and run the following commands:
-```
-python3 -m venv .mobilization
-source .mobilization/bin/activate
-pip install -r requirements.txt 
-```
-
 ## 3. Run code
 
-Detailed instructions on the code workflow are provided in the [code directory](code/README.md)
-
-## Example Repositories
-* [CLIF Adult Sepsis Events](https://github.com/08wparker/CLIF_sepsis) for R
-* [CLIF Eligibility for mobilization](https://github.com/kaveriC/CLIF-eligibility-for-mobilization) for Python
-* [CLIF Variation in Ventilation](https://github.com/ingra107/clif_vent_variation)
----
 
 
