@@ -38,17 +38,22 @@ def create_consort_diagram(steps, title="CONSORT Flow Diagram", subtitle=""):
             'red': '#FFB6C1'
         }
         box_color = color_map.get(step.get('color', 'blue'), '#ADD8E6')
-        edge_color = {'blue': '#000080', 'green': '#006400', 'red': '#8B0000'}.get(
-            step.get('color', 'blue'), '#000080'
-        )
+        # edge_color is not needed for boundary-less boxes
+        # edge_color = {'blue': '#000080', 'green': '#006400', 'red': '#8B0000'}.get(
+        #     step.get('color', 'blue'), '#000080'
+        # )
 
         # Main box - taller box if label has newlines or has a note
         has_note = 'note' in step
         box_height = 1.2 if (('\n' in step['label'] and step['label'].count('\n') > 1) or has_note) else 0.8
-        box = FancyBboxPatch((3, y_pos - box_height), 4, box_height,
-                            boxstyle="round,pad=0.05",
-                            edgecolor=edge_color, facecolor=box_color,
-                            linewidth=2.5)
+        box = FancyBboxPatch(
+            (3, y_pos - box_height),
+            4, box_height,
+            boxstyle="round,pad=0.05",
+            edgecolor='none',        # <- No box boundary
+            facecolor=box_color,
+            linewidth=0              # <- No shared boundary
+        )
         ax.add_patch(box)
 
         # Text in box - adjust positioning for taller boxes
@@ -78,13 +83,14 @@ def create_consort_diagram(steps, title="CONSORT Flow Diagram", subtitle=""):
         if 'split' in step and len(step['split']) == 2:
             # First split box (top right)
             top_box_color = color_map.get(step['split'][0].get('color', 'blue'), '#ADD8E6')
-            top_edge_color = {'blue': '#000080', 'green': '#006400', 'red': '#8B0000'}.get(
-                step['split'][0].get('color', 'blue'), '#000080'
+            # top_edge_color not used for no boundary
+            top_box = FancyBboxPatch(
+                (7.5, y_pos - box_height/2 + 0.2), 3.5, 0.8,
+                boxstyle="round,pad=0.05",
+                edgecolor='none',
+                facecolor=top_box_color,
+                linewidth=0
             )
-            top_box = FancyBboxPatch((7.5, y_pos - box_height/2 + 0.2), 3.5, 0.8,
-                                     boxstyle="round,pad=0.05",
-                                     edgecolor=top_edge_color, facecolor=top_box_color,
-                                     linewidth=2.5)
             ax.add_patch(top_box)
             ax.text(9.25, y_pos - box_height/2 + 0.6, step['split'][0]['label'],
                     ha='center', va='center', fontsize=10, fontweight='bold')
@@ -93,13 +99,14 @@ def create_consort_diagram(steps, title="CONSORT Flow Diagram", subtitle=""):
 
             # Second split box (bottom right)
             bottom_box_color = color_map.get(step['split'][1].get('color', 'blue'), '#ADD8E6')
-            bottom_edge_color = {'blue': '#000080', 'green': '#006400', 'red': '#8B0000'}.get(
-                step['split'][1].get('color', 'blue'), '#000080'
+            # bottom_edge_color not used for no boundary
+            bottom_box = FancyBboxPatch(
+                (7.5, y_pos - box_height/2 - 1), 3.5, 0.8,
+                boxstyle="round,pad=0.05",
+                edgecolor='none',
+                facecolor=bottom_box_color,
+                linewidth=0
             )
-            bottom_box = FancyBboxPatch((7.5, y_pos - box_height/2 - 1), 3.5, 0.8,
-                                      boxstyle="round,pad=0.05",
-                                      edgecolor=bottom_edge_color, facecolor=bottom_box_color,
-                                      linewidth=2.5)
             ax.add_patch(bottom_box)
             ax.text(9.25, y_pos - box_height/2 - 0.6, step['split'][1]['label'],
                     ha='center', va='center', fontsize=10, fontweight='bold')
@@ -136,10 +143,13 @@ def create_consort_diagram(steps, title="CONSORT Flow Diagram", subtitle=""):
             for idx, exclusion in enumerate(exclusions):
                 exc_y = y_pos - box_height/2 - (idx * 1.2)  # Stack exclusions vertically
 
-                exc_box = FancyBboxPatch((8, exc_y - 0.4), 2.5, 0.8,
-                                        boxstyle="round,pad=0.05",
-                                        edgecolor='#8B0000', facecolor='#FFB6C1',
-                                        linewidth=2.5)
+                exc_box = FancyBboxPatch(
+                    (8, exc_y - 0.4), 2.5, 0.8,
+                    boxstyle="round,pad=0.05",
+                    edgecolor='none',          # <- No box boundary
+                    facecolor='#FFB6C1',
+                    linewidth=0
+                )
                 ax.add_patch(exc_box)
 
                 ax.text(9.25, exc_y, exclusion['label'],
