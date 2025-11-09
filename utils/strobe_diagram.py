@@ -11,27 +11,32 @@ def create_consort_diagram(steps, title="CONSORT Flow Diagram", subtitle=""):
         - 'label': str, description of the step
         - 'n': int, number in cohort
         - 'excluded': dict (optional) with 'label' and 'n' for exclusions
-        - 'split': list of 2 dicts (optional) for branching into two boxes
+        - 'split': list of 2+ dicts (optional) for branching into multiple boxes
         - 'color': str (optional), 'blue', 'red', or 'green'. Default 'blue'
     """
     # Calculate total height needed - account for split boxes needing more space
     total_height = 0
     step_heights = []
     for i, step in enumerate(steps):
-        if 'split' in step and len(step['split']) == 2:
+        if 'split' in step and len(step['split']) >= 2:
             # Steps with splits need much more vertical space to prevent overlap
-            step_heights.append(7.0)  # Increased from 5.0 to give even more room
-            total_height += 7.0
+            # More splits = more space needed
+            num_splits = len(step['split'])
+            base_height = 25.0  # Massively increased from 16.0 to accommodate very tall boxes
+            extra_height_per_split = 8.0  # Increased from 5.0 for more space per split
+            step_height = base_height + max(0, (num_splits - 2) * extra_height_per_split)
+            step_heights.append(step_height)
+            total_height += step_height
         # Also check if NEXT step has splits - if so, give current step more space too
-        elif i < len(steps) - 1 and 'split' in steps[i + 1] and len(steps[i + 1]['split']) == 2:
+        elif i < len(steps) - 1 and 'split' in steps[i + 1] and len(steps[i + 1]['split']) >= 2:
             # Step before a split needs extra space for longer arrow
-            step_heights.append(4.0)  # Increased from 3.5
-            total_height += 4.0
+            step_heights.append(8.0)  # Increased from 6.5 to show full arrow
+            total_height += 8.0
         else:
-            step_heights.append(2.5)
-            total_height += 2.5
+            step_heights.append(7.0)  # Increased from 5.5 to give more vertical space between boxes
+            total_height += 7.0
 
-    fig, ax = plt.subplots(figsize=(12, 10))
+    fig, ax = plt.subplots(figsize=(12, 16))  # Increased height from 10 to 16
     ax.set_xlim(0, 12)
     ax.set_ylim(0, total_height + 2)  # Reduced extra space for title
     ax.axis('off')
@@ -69,12 +74,17 @@ def create_consort_diagram(steps, title="CONSORT Flow Diagram", subtitle=""):
         has_note = 'note' in step
         # Count newlines in label to determine box height (increased for better padding)
         newline_count = step['label'].count('\n')
-        if newline_count >= 2 or has_note:
-            box_height = 1.7  # Increased from 1.5
+        if has_note:
+            # Calculate note lines for boxes with notes
+            note_lines = step['note'].count('\n') + 1
+            # Much taller boxes with generous spacing
+            box_height = max(5.0, 0.80 * (newline_count + 1) + 0.70 * note_lines + 2.5)
+        elif newline_count >= 2:
+            box_height = 4.5  # Increased from 4.0
         elif newline_count == 1:
-            box_height = 1.2  # Increased from 1.0
+            box_height = 4.0  # Increased from 3.4
         else:
-            box_height = 1.0  # Increased from 0.8
+            box_height = 2.2  # Increased from 2.0 for better padding
         box = FancyBboxPatch(
             (3, step_y_pos - box_height),
             4, box_height,
@@ -89,159 +99,122 @@ def create_consort_diagram(steps, title="CONSORT Flow Diagram", subtitle=""):
         # Check if there's a note (non-bold text)
         if 'note' in step:
             # With note: label at top, note in middle, n at bottom
-            label_y = step_y_pos - box_height/2 + 0.4
-            note_y = step_y_pos - box_height/2
-            n_y = step_y_pos - box_height/2 - 0.4
+            # Use proportional offsets based on box height for better spacing
+            box_center = step_y_pos - box_height/2
+            # Balance between spreading elements and keeping away from edges
+            label_offset = box_height * 0.27  # Position label in top third
+            n_offset = box_height * 0.27  # Position n in bottom third
 
-            ax.text(5, label_y, step['label'],
+            ax.text(5, box_center + label_offset, step['label'],
                     ha='center', va='center', fontsize=11, fontweight='bold')
-            ax.text(5, note_y, step['note'],
-                    ha='center', va='center', fontsize=9, fontweight='normal', style='italic')
-            ax.text(5, n_y, f"n = {step['n']:,}",
+            ax.text(5, box_center, step['note'],
+                    ha='center', va='center', fontsize=9, fontweight='normal', style='italic',
+                    wrap=True)
+            ax.text(5, box_center - n_offset, f"n = {step['n']:,}",
                     ha='center', va='center', fontsize=10)
         else:
-            # No note: label at top, n at bottom - adjust based on box height with more padding
-            if box_height >= 1.5:
-                label_y = step_y_pos - box_height/2 + 0.4
-                n_y = step_y_pos - box_height/2 - 0.4
-            elif box_height >= 1.0:
-                label_y = step_y_pos - box_height/2 + 0.3
-                n_y = step_y_pos - box_height/2 - 0.3
-            else:
-                label_y = step_y_pos - box_height/2 + 0.2
-                n_y = step_y_pos - box_height/2 - 0.2
-            ax.text(5, label_y, step['label'],
+            # No note: label at top, n at bottom - use proportional spacing based on box height
+            box_center = step_y_pos - box_height/2
+            # Use proportional offsets for taller boxes, minimum offset for smaller boxes
+            # Keep text well within box boundaries and spread out
+            label_offset = min(1.0, box_height * 0.30)
+            n_offset = min(1.0, box_height * 0.30)
+
+            ax.text(5, box_center + label_offset, step['label'],
                     ha='center', va='center', fontsize=11, fontweight='bold')
-            ax.text(5, n_y, f"n = {step['n']:,}",
+            ax.text(5, box_center - n_offset, f"n = {step['n']:,}",
                     ha='center', va='center', fontsize=10)
 
-        # Split into two boxes (if exists) - positions them on the RIGHT side
-        if 'split' in step and len(step['split']) == 2:
-            # Calculate heights for both boxes first
-            # First split box (top right)
-            top_box_color = color_map.get(step['split'][0].get('color', 'blue'), '#ADD8E6')
+        # Split into multiple boxes (if exists) - positions them on the RIGHT side
+        if 'split' in step and len(step['split']) >= 2:
+            num_splits = len(step['split'])
+            split_boxes = []
 
-            # Calculate top box height based on content - be very generous with space
-            top_label_lines = step['split'][0]['label'].count('\n') + 1
-            if 'note' in step['split'][0] and step['split'][0]['note']:
-                top_note_lines = step['split'][0]['note'].count('\n') + 1
-                # Much taller boxes for notes - each line needs space
-                top_box_height = max(2.0, 0.4 * top_label_lines + 0.35 * top_note_lines + 0.35 + 0.6)
-            else:
-                top_box_height = max(1.0, 0.4 * top_label_lines + 0.35 + 0.35)
+            # Calculate heights for all split boxes
+            for split_item in step['split']:
+                split_box_color = color_map.get(split_item.get('color', 'blue'), '#ADD8E6')
+                label_lines = split_item['label'].count('\n') + 1
 
-            # Calculate bottom box height based on content - be very generous with space
-            bottom_box_color = color_map.get(step['split'][1].get('color', 'blue'), '#ADD8E6')
-            bottom_label_lines = step['split'][1]['label'].count('\n') + 1
-            if 'note' in step['split'][1] and step['split'][1]['note']:
-                bottom_note_lines = step['split'][1]['note'].count('\n') + 1
-                # Much taller boxes for notes
-                bottom_box_height = max(2.0, 0.4 * bottom_label_lines + 0.35 * bottom_note_lines + 0.35 + 0.6)
-            else:
-                bottom_box_height = max(1.0, 0.4 * bottom_label_lines + 0.35 + 0.35)
+                if 'note' in split_item and split_item['note']:
+                    note_lines = split_item['note'].count('\n') + 1
+                    # Box height with compact spacing
+                    split_box_height = max(6.0, 1.0 * label_lines + 0.7 * note_lines + 3.5)
+                else:
+                    split_box_height = max(2.5, 0.70 * label_lines + 1.5)
 
-            # Position split boxes more explicitly with clear separation
-            # Main box: top at step_y_pos, bottom at (step_y_pos - box_height)
+                split_boxes.append({
+                    'item': split_item,
+                    'height': split_box_height,
+                    'color': split_box_color
+                })
 
-            # Calculate positions to ensure boxes don't touch
+            # Calculate total height needed and distribute boxes evenly
             main_box_center_y = step_y_pos - box_height/2
-            gap_between_boxes = 0.3  # Space between the two split boxes
+            total_split_height = sum(b['height'] for b in split_boxes)
+            gap_between_boxes = 3.5  # Massively increased from 2.5 for much more space between very tall boxes
+            total_gaps = gap_between_boxes * (num_splits - 1)
 
-            # Top split box: positioned in upper half
-            top_box_top = step_y_pos - 0.15
-            top_box_bottom = top_box_top - top_box_height
-            top_box_y_center = (top_box_top + top_box_bottom) / 2
+            # Start from the top and work down
+            current_y = step_y_pos - 0.15
 
-            # Bottom split box: positioned in lower half with clear gap from top box
-            main_box_bottom = step_y_pos - box_height
-            bottom_box_bottom = main_box_bottom + 0.15
-            bottom_box_top = bottom_box_bottom + bottom_box_height
-            bottom_box_y_center = (bottom_box_top + bottom_box_bottom) / 2
+            for idx, split_box_info in enumerate(split_boxes):
+                split_item = split_box_info['item']
+                split_box_height = split_box_info['height']
+                split_box_color = split_box_info['color']
 
-            # Ensure there's a visible gap between the boxes
-            min_gap = top_box_bottom - bottom_box_top
-            if min_gap < gap_between_boxes:
-                # Adjust positions to create gap
-                overlap = gap_between_boxes - min_gap
-                top_box_bottom = top_box_bottom + overlap/2
-                top_box_top = top_box_bottom + top_box_height
-                top_box_y_center = (top_box_top + top_box_bottom) / 2
+                # Calculate box position
+                box_top = current_y
+                box_bottom = box_top - split_box_height
+                box_center_y = (box_top + box_bottom) / 2
 
-                bottom_box_top = bottom_box_top - overlap/2
-                bottom_box_bottom = bottom_box_top - bottom_box_height
-                bottom_box_y_center = (bottom_box_top + bottom_box_bottom) / 2
+                # Draw the split box
+                box = FancyBboxPatch(
+                    (7.5, box_bottom), 4.5, split_box_height,
+                    boxstyle="round,pad=0.05",
+                    edgecolor='none',
+                    facecolor=split_box_color,
+                    linewidth=0
+                )
+                ax.add_patch(box)
 
-            # Now draw the top box with adjusted position
-            top_box = FancyBboxPatch(
-                (7.5, top_box_bottom), 4.5, top_box_height,
-                boxstyle="round,pad=0.05",
-                edgecolor='none',
-                facecolor=top_box_color,
-                linewidth=0
-            )
-            ax.add_patch(top_box)
+                # Add text to split box
+                if 'note' in split_item and split_item['note']:
+                    # With note: stack elements from top with fixed spacing
+                    # All elements use 'top' alignment to stack downward from fixed positions
 
-            # Add text to top split box
-            if 'note' in step['split'][0] and step['split'][0]['note']:
-                # With note: position from top to bottom with clear separation
-                # Label at top
-                ax.text(9.75, top_box_top - 0.25, step['split'][0]['label'],
-                        ha='center', va='top', fontsize=9.5, fontweight='bold')
-                # Note in middle
-                ax.text(9.75, top_box_y_center, step['split'][0]['note'],
-                        ha='center', va='center', fontsize=7, fontweight='normal', style='italic')
-                # n at bottom
-                ax.text(9.75, top_box_bottom + 0.25, f"n = {step['split'][0]['n']:,}",
-                        ha='center', va='bottom', fontsize=8.5)
-            else:
-                # Without note: just label and n
-                ax.text(9.75, top_box_y_center + 0.25, step['split'][0]['label'],
-                        ha='center', va='center', fontsize=10, fontweight='bold')
-                ax.text(9.75, top_box_y_center - 0.25, f"n = {step['split'][0]['n']:,}",
-                        ha='center', va='center', fontsize=9)
+                    note_lines = split_item['note'].count('\n') + 1
 
-            # Now draw the bottom box with adjusted position
-            bottom_box = FancyBboxPatch(
-                (7.5, bottom_box_bottom), 4.5, bottom_box_height,
-                boxstyle="round,pad=0.05",
-                edgecolor='none',
-                facecolor=bottom_box_color,
-                linewidth=0
-            )
-            ax.add_patch(bottom_box)
+                    # Position label at top (0.3 units from top edge)
+                    label_y = box_top - 0.3
+                    # Position note below label - calculate gap based on label lines to prevent overlap
+                    # Use full unit per line to ensure no overlap with bold font
+                    label_height_estimate = 1.0 * label_lines  # Full unit per line for bold labels
+                    note_y = label_y - label_height_estimate - 0.1  # Minimal gap after label
+                    # Position n at a fixed distance from bottom edge
+                    n_y = box_bottom + 0.2  # Minimal padding from bottom
 
-            # Add text to bottom split box
-            if 'note' in step['split'][1] and step['split'][1]['note']:
-                # With note: position from top to bottom with clear separation
-                # Label at top
-                ax.text(9.75, bottom_box_top - 0.25, step['split'][1]['label'],
-                        ha='center', va='top', fontsize=9.5, fontweight='bold')
-                # Note in middle
-                ax.text(9.75, bottom_box_y_center, step['split'][1]['note'],
-                        ha='center', va='center', fontsize=7, fontweight='normal', style='italic')
-                # n at bottom
-                ax.text(9.75, bottom_box_bottom + 0.25, f"n = {step['split'][1]['n']:,}",
-                        ha='center', va='bottom', fontsize=8.5)
-            else:
-                # Without note: just label and n
-                ax.text(9.75, bottom_box_y_center + 0.25, step['split'][1]['label'],
-                        ha='center', va='center', fontsize=10, fontweight='bold')
-                ax.text(9.75, bottom_box_y_center - 0.25, f"n = {step['split'][1]['n']:,}",
-                        ha='center', va='center', fontsize=9)
+                    ax.text(9.75, label_y, split_item['label'],
+                            ha='center', va='top', fontsize=10, fontweight='bold')
+                    ax.text(9.75, note_y, split_item['note'],
+                            ha='center', va='top', fontsize=8, fontweight='normal', style='italic',
+                            wrap=True)
+                    ax.text(9.75, n_y, f"n = {split_item['n']:,}",
+                            ha='center', va='bottom', fontsize=9)
+                else:
+                    # Without note: just label and n
+                    ax.text(9.75, box_center_y + 0.6, split_item['label'],
+                            ha='center', va='center', fontsize=10, fontweight='bold')
+                    ax.text(9.75, box_center_y - 0.6, f"n = {split_item['n']:,}",
+                            ha='center', va='center', fontsize=9)
 
-            # Arrows from main box to split boxes (angled to show clear separation)
-            # Arrow from main box center, angled upward to top split box
-            main_box_center_y = step_y_pos - box_height/2
-            arrow_top = FancyArrowPatch((7, main_box_center_y + 0.15), (7.5, top_box_y_center),
+                # Arrow from main box to this split box
+                arrow = FancyArrowPatch((7, main_box_center_y), (7.5, box_center_y),
                                         arrowstyle='->', mutation_scale=15,
                                         linewidth=2, color='black')
-            ax.add_patch(arrow_top)
+                ax.add_patch(arrow)
 
-            # Arrow from main box center, angled downward to bottom split box
-            arrow_bottom = FancyArrowPatch((7, main_box_center_y - 0.15), (7.5, bottom_box_y_center),
-                                         arrowstyle='->', mutation_scale=15,
-                                         linewidth=2, color='black')
-            ax.add_patch(arrow_bottom)
+                # Move down for next box
+                current_y = box_bottom - gap_between_boxes
 
         # Exclusion box (if exists) - supports single or multiple exclusions
         elif 'excluded' in step:

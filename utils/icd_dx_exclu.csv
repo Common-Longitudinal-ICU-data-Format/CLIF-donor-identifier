@@ -1,0 +1,1194 @@
+ICD-10-CM,description,dx_broad
+A021,Salmonella sepsis,sepsis
+A403,Sepsis due to Streptococcus pneumoniae,sepsis
+A409,"Streptococcal sepsis, unspecified",sepsis
+A4102,Sepsis due to Methicillin resistant Staphylococcus aureus,sepsis
+A413,Sepsis due to Hemophilus influenzae,sepsis
+A414,Sepsis due to anaerobes,sepsis
+A4150,"Gram-negative sepsis, unspecified",sepsis
+A4151,Sepsis due to Escherichia coli [E. coli],sepsis
+A4152,Sepsis due to Pseudomonas,sepsis
+A4153,Sepsis due to Serratia,sepsis
+A4159,Other Gram-negative sepsis,sepsis
+A4189,Other specified sepsis,sepsis
+A419,"Sepsis, unspecified organism",sepsis
+B007,Disseminated herpesviral disease,other
+C000,Malignant neoplasm of external upper lip,cancer
+C001,Malignant neoplasm of external lower lip,cancer
+C002,"Malignant neoplasm of external lip, unspecified",cancer
+C003,"Malignant neoplasm of upper lip, inner aspect",cancer
+C004,"Malignant neoplasm of lower lip, inner aspect",cancer
+C005,"Malignant neoplasm of lip, unspecified, inner aspect",cancer
+C006,"Malignant neoplasm of commissure of lip, unspecified",cancer
+C008,Malignant neoplasm of overlapping sites of lip,cancer
+C01,Malignant neoplasm of base of tongue,cancer
+C020,Malignant neoplasm of dorsal surface of tongue,cancer
+C021,Malignant neoplasm of border of tongue,cancer
+C022,Malignant neoplasm of ventral surface of tongue,cancer
+C023,"Malignant neoplasm of anterior two-thirds of tongue, part unspecified",cancer
+C024,Malignant neoplasm of lingual tonsil,cancer
+C028,Malignant neoplasm of overlapping sites of tongue,cancer
+C028,Malignant neoplasm of overlapping sites of tongue,cancer
+C029,"Malignant neoplasm of tongue, unspecified",cancer
+C030,Malignant neoplasm of upper gum,cancer
+C031,Malignant neoplasm of lower gum,cancer
+C039,"Malignant neoplasm of gum, unspecified",cancer
+C039,"Malignant neoplasm of gum, unspecified",cancer
+C040,Malignant neoplasm of anterior floor of mouth,cancer
+C041,Malignant neoplasm of lateral floor of mouth,cancer
+C048,Malignant neoplasm of overlapping sites of floor of mouth,cancer
+C049,"Malignant neoplasm of floor of mouth, unspecified",cancer
+C050,Malignant neoplasm of hard palate,cancer
+C051,Malignant neoplasm of soft palate,cancer
+C052,Malignant neoplasm of uvula,cancer
+C059,"Malignant neoplasm of palate, unspecified",cancer
+C060,Malignant neoplasm of cheek mucosa,cancer
+C061,Malignant neoplasm of vestibule of mouth,cancer
+C062,Malignant neoplasm of retromolar area,cancer
+C0689,Malignant neoplasm of overlapping sites of other parts of mouth,cancer
+C069,"Malignant neoplasm of mouth, unspecified",cancer
+C07,Malignant neoplasm of parotid gland,cancer
+C080,Malignant neoplasm of submandibular gland,cancer
+C081,Malignant neoplasm of sublingual gland,cancer
+C089,"Malignant neoplasm of major salivary gland, unspecified",cancer
+C089,"Malignant neoplasm of major salivary gland, unspecified",cancer
+C090,Malignant neoplasm of tonsillar fossa,cancer
+C091,Malignant neoplasm of tonsillar pillar (anterior) (posterior),cancer
+C099,"Malignant neoplasm of tonsil, unspecified",cancer
+C100,Malignant neoplasm of vallecula,cancer
+C101,Malignant neoplasm of anterior surface of epiglottis,cancer
+C102,Malignant neoplasm of lateral wall of oropharynx,cancer
+C103,Malignant neoplasm of posterior wall of oropharynx,cancer
+C104,Malignant neoplasm of branchial cleft,cancer
+C108,Malignant neoplasm of overlapping sites of oropharynx,cancer
+C108,Malignant neoplasm of overlapping sites of oropharynx,cancer
+C109,"Malignant neoplasm of oropharynx, unspecified",cancer
+C110,Malignant neoplasm of superior wall of nasopharynx,cancer
+C111,Malignant neoplasm of posterior wall of nasopharynx,cancer
+C112,Malignant neoplasm of lateral wall of nasopharynx,cancer
+C113,Malignant neoplasm of anterior wall of nasopharynx,cancer
+C118,Malignant neoplasm of overlapping sites of nasopharynx,cancer
+C119,"Malignant neoplasm of nasopharynx, unspecified",cancer
+C12,Malignant neoplasm of pyriform sinus,cancer
+C130,Malignant neoplasm of postcricoid region,cancer
+C131,"Malignant neoplasm of aryepiglottic fold, hypopharyngeal aspect",cancer
+C132,Malignant neoplasm of posterior wall of hypopharynx,cancer
+C138,Malignant neoplasm of overlapping sites of hypopharynx,cancer
+C139,"Malignant neoplasm of hypopharynx, unspecified",cancer
+C140,"Malignant neoplasm of pharynx, unspecified",cancer
+C142,Malignant neoplasm of Waldeyer's ring,cancer
+C148,"Malignant neoplasm of overlapping sites of lip, oral cavity and pharynx",cancer
+C148,"Malignant neoplasm of overlapping sites of lip, oral cavity and pharynx",cancer
+C153,Malignant neoplasm of upper third of esophagus,cancer
+C153,Malignant neoplasm of upper third of esophagus,cancer
+C154,Malignant neoplasm of middle third of esophagus,cancer
+C154,Malignant neoplasm of middle third of esophagus,cancer
+C155,Malignant neoplasm of lower third of esophagus,cancer
+C155,Malignant neoplasm of lower third of esophagus,cancer
+C158,Malignant neoplasm of overlapping sites of esophagus,cancer
+C159,"Malignant neoplasm of esophagus, unspecified",cancer
+C160,Malignant neoplasm of cardia,cancer
+C161,Malignant neoplasm of fundus of stomach,cancer
+C162,Malignant neoplasm of body of stomach,cancer
+C163,Malignant neoplasm of pyloric antrum,cancer
+C164,Malignant neoplasm of pylorus,cancer
+C165,"Malignant neoplasm of lesser curvature of stomach, unspecified",cancer
+C166,"Malignant neoplasm of greater curvature of stomach, unspecified",cancer
+C168,Malignant neoplasm of overlapping sites of stomach,cancer
+C168,Malignant neoplasm of overlapping sites of stomach,cancer
+C169,"Malignant neoplasm of stomach, unspecified",cancer
+C169,"Malignant neoplasm of stomach, unspecified",cancer
+C170,Malignant neoplasm of duodenum,cancer
+C171,Malignant neoplasm of jejunum,cancer
+C172,Malignant neoplasm of ileum,cancer
+C173,"Meckel's diverticulum, malignant",cancer
+C178,Malignant neoplasm of overlapping sites of small intestine,cancer
+C179,"Malignant neoplasm of small intestine, unspecified",cancer
+C180,Malignant neoplasm of cecum,cancer
+C181,Malignant neoplasm of appendix,cancer
+C182,Malignant neoplasm of ascending colon,cancer
+C183,Malignant neoplasm of hepatic flexure,cancer
+C184,Malignant neoplasm of transverse colon,cancer
+C185,Malignant neoplasm of splenic flexure,cancer
+C186,Malignant neoplasm of descending colon,cancer
+C187,Malignant neoplasm of sigmoid colon,cancer
+C188,Malignant neoplasm of overlapping sites of colon,cancer
+C189,"Malignant neoplasm of colon, unspecified",cancer
+C19,Malignant neoplasm of rectosigmoid junction,cancer
+C20,Malignant neoplasm of rectum,cancer
+C210,"Malignant neoplasm of anus, unspecified",cancer
+C211,Malignant neoplasm of anal canal,cancer
+C218,"Malignant neoplasm of overlapping sites of rectum, anus and anal canal",cancer
+C220,Liver cell carcinoma,other
+C221,Intrahepatic bile duct carcinoma,other
+C222,Hepatoblastoma,cancer
+C227,Other specified carcinomas of liver,other
+C228,"Malignant neoplasm of liver, primary, unspecified as to type",cancer
+C229,"Malignant neoplasm of liver, not specified as primary or secondary",cancer
+C23,Malignant neoplasm of gallbladder,cancer
+C240,Malignant neoplasm of extrahepatic bile duct,cancer
+C241,Malignant neoplasm of ampulla of Vater,cancer
+C248,Malignant neoplasm of overlapping sites of biliary tract,cancer
+C249,"Malignant neoplasm of biliary tract, unspecified",cancer
+C250,Malignant neoplasm of head of pancreas,cancer
+C251,Malignant neoplasm of body of pancreas,cancer
+C252,Malignant neoplasm of tail of pancreas,cancer
+C253,Malignant neoplasm of pancreatic duct,cancer
+C254,Malignant neoplasm of endocrine pancreas,cancer
+C257,Malignant neoplasm of other parts of pancreas,cancer
+C258,Malignant neoplasm of overlapping sites of pancreas,cancer
+C259,"Malignant neoplasm of pancreas, unspecified",cancer
+C260,"Malignant neoplasm of intestinal tract, part unspecified",cancer
+C261,Malignant neoplasm of spleen,cancer
+C269,Malignant neoplasm of ill-defined sites within the digestive system,cancer
+C269,Malignant neoplasm of ill-defined sites within the digestive system,cancer
+C300,Malignant neoplasm of nasal cavity,cancer
+C301,Malignant neoplasm of middle ear,cancer
+C310,Malignant neoplasm of maxillary sinus,cancer
+C311,Malignant neoplasm of ethmoidal sinus,cancer
+C312,Malignant neoplasm of frontal sinus,cancer
+C313,Malignant neoplasm of sphenoid sinus,cancer
+C318,Malignant neoplasm of overlapping sites of accessory sinuses,cancer
+C319,"Malignant neoplasm of accessory sinus, unspecified",cancer
+C320,Malignant neoplasm of glottis,cancer
+C321,Malignant neoplasm of supraglottis,cancer
+C322,Malignant neoplasm of subglottis,cancer
+C323,Malignant neoplasm of laryngeal cartilage,cancer
+C328,Malignant neoplasm of overlapping sites of larynx,cancer
+C329,"Malignant neoplasm of larynx, unspecified",cancer
+C33,Malignant neoplasm of trachea,cancer
+C3400,Malignant neoplasm of unspecified main bronchus,cancer
+C3410,"Malignant neoplasm of upper lobe, unspecified bronchus or lung",cancer
+C342,"Malignant neoplasm of middle lobe, bronchus or lung",cancer
+C3430,"Malignant neoplasm of lower lobe, unspecified bronchus or lung",cancer
+C3480,Malignant neoplasm of overlapping sites of unspecified bronchus and lung,cancer
+C3490,Malignant neoplasm of unspecified part of unspecified bronchus or lung,cancer
+C384,Malignant neoplasm of pleura,cancer
+C384,Malignant neoplasm of pleura,cancer
+C384,Malignant neoplasm of pleura,cancer
+C384,Malignant neoplasm of pleura,cancer
+C390,"Malignant neoplasm of upper respiratory tract, part unspecified",cancer
+C399,"Malignant neoplasm of lower respiratory tract, part unspecified",cancer
+C399,"Malignant neoplasm of lower respiratory tract, part unspecified",cancer
+C4000,Malignant neoplasm of scapula and long bones of unspecified upper limb,cancer
+C4010,Malignant neoplasm of short bones of unspecified upper limb,cancer
+C4020,Malignant neoplasm of long bones of unspecified lower limb,cancer
+C4030,Malignant neoplasm of short bones of unspecified lower limb,cancer
+C410,Malignant neoplasm of bones of skull and face,cancer
+C411,Malignant neoplasm of mandible,cancer
+C412,Malignant neoplasm of vertebral column,cancer
+C413,"Malignant neoplasm of ribs, sternum and clavicle",cancer
+C414,"Malignant neoplasm of pelvic bones, sacrum and coccyx",cancer
+C419,"Malignant neoplasm of bone and articular cartilage, unspecified",cancer
+C430,Malignant melanoma of lip,cancer
+C4310,"Malignant melanoma of unspecified eyelid, including canthus",cancer
+C4320,Malignant melanoma of unspecified ear and external auricular canal,cancer
+C4330,Malignant melanoma of unspecified part of face,cancer
+C4331,Malignant melanoma of nose,cancer
+C4339,Malignant melanoma of other parts of face,cancer
+C434,Malignant melanoma of scalp and neck,cancer
+C4359,Malignant melanoma of other part of trunk,cancer
+C4360,"Malignant melanoma of unspecified upper limb, including shoulder",cancer
+C4370,"Malignant melanoma of unspecified lower limb, including hip",cancer
+C438,Malignant melanoma of overlapping sites of skin,cancer
+C439,"Malignant melanoma of skin, unspecified",cancer
+C4400,Unspecified malignant neoplasm of skin of lip,cancer
+C4401,Basal cell carcinoma of skin of lip,other
+C4402,Squamous cell carcinoma of skin of lip,cancer
+C4409,Other specified malignant neoplasm of skin of lip,cancer
+C44101,"Unspecified malignant neoplasm of skin of unspecified eyelid, including canthus",cancer
+C44111,"Basal cell carcinoma of skin of unspecified eyelid, including canthus",other
+C44121,"Squamous cell carcinoma of skin of unspecified eyelid, including canthus",cancer
+C44191,"Other specified malignant neoplasm of skin of unspecified eyelid, including canthus",cancer
+C44201,Unspecified malignant neoplasm of skin of unspecified ear and external auricular canal,cancer
+C44211,Basal cell carcinoma of skin of unspecified ear and external auricular canal,other
+C44221,Squamous cell carcinoma of skin of unspecified ear and external auricular canal,cancer
+C44291,Other specified malignant neoplasm of skin of unspecified ear and external auricular canal,cancer
+C44300,Unspecified malignant neoplasm of skin of unspecified part of face,cancer
+C44301,Unspecified malignant neoplasm of skin of nose,cancer
+C44309,Unspecified malignant neoplasm of skin of other parts of face,cancer
+C44310,Basal cell carcinoma of skin of unspecified parts of face,other
+C44311,Basal cell carcinoma of skin of nose,other
+C44319,Basal cell carcinoma of skin of other parts of face,other
+C44320,Squamous cell carcinoma of skin of unspecified parts of face,cancer
+C44321,Squamous cell carcinoma of skin of nose,cancer
+C44329,Squamous cell carcinoma of skin of other parts of face,cancer
+C44390,Other specified malignant neoplasm of skin of unspecified parts of face,cancer
+C44391,Other specified malignant neoplasm of skin of nose,cancer
+C44399,Other specified malignant neoplasm of skin of other parts of face,cancer
+C4440,Unspecified malignant neoplasm of skin of scalp and neck,cancer
+C4441,Basal cell carcinoma of skin of scalp and neck,other
+C4442,Squamous cell carcinoma of skin of scalp and neck,cancer
+C4449,Other specified malignant neoplasm of skin of scalp and neck,cancer
+C44500,Unspecified malignant neoplasm of anal skin,cancer
+C44501,Unspecified malignant neoplasm of skin of breast,cancer
+C44509,Unspecified malignant neoplasm of skin of other part of trunk,cancer
+C44510,Basal cell carcinoma of anal skin,other
+C44511,Basal cell carcinoma of skin of breast,other
+C44519,Basal cell carcinoma of skin of other part of trunk,other
+C44520,Squamous cell carcinoma of anal skin,cancer
+C44521,Squamous cell carcinoma of skin of breast,cancer
+C44529,Squamous cell carcinoma of skin of other part of trunk,cancer
+C44590,Other specified malignant neoplasm of anal skin,cancer
+C44591,Other specified malignant neoplasm of skin of breast,cancer
+C44599,Other specified malignant neoplasm of skin of other part of trunk,cancer
+C44601,"Unspecified malignant neoplasm of skin of unspecified upper limb, including shoulder",cancer
+C44611,"Basal cell carcinoma of skin of unspecified upper limb, including shoulder",other
+C44621,"Squamous cell carcinoma of skin of unspecified upper limb, including shoulder",cancer
+C44691,"Other specified malignant neoplasm of skin of unspecified upper limb, including shoulder",cancer
+C44701,"Unspecified malignant neoplasm of skin of unspecified lower limb, including hip",cancer
+C44711,"Basal cell carcinoma of skin of unspecified lower limb, including hip",other
+C44721,"Squamous cell carcinoma of skin of unspecified lower limb, including hip",cancer
+C44791,"Other specified malignant neoplasm of skin of unspecified lower limb, including hip",cancer
+C4480,Unspecified malignant neoplasm of overlapping sites of skin,cancer
+C4481,Basal cell carcinoma of overlapping sites of skin,other
+C4482,Squamous cell carcinoma of overlapping sites of skin,cancer
+C4489,Other specified malignant neoplasm of overlapping sites of skin,cancer
+C4490,"Unspecified malignant neoplasm of skin, unspecified",cancer
+C4491,"Basal cell carcinoma of skin, unspecified",other
+C4492,"Squamous cell carcinoma of skin, unspecified",cancer
+C4499,"Other specified malignant neoplasm of skin, unspecified",cancer
+C478,Malignant neoplasm of overlapping sites of peripheral nerves and autonomic nervous system,cancer
+C480,Malignant neoplasm of retroperitoneum,cancer
+C481,Malignant neoplasm of specified parts of peritoneum,cancer
+C482,"Malignant neoplasm of peritoneum, unspecified",cancer
+C488,Malignant neoplasm of overlapping sites of retroperitoneum and peritoneum,cancer
+C490,"Malignant neoplasm of connective and soft tissue of head, face and neck",cancer
+C4910,"Malignant neoplasm of connective and soft tissue of unspecified upper limb, including shoulder",cancer
+C4920,"Malignant neoplasm of connective and soft tissue of unspecified lower limb, including hip",cancer
+C493,Malignant neoplasm of connective and soft tissue of thorax,cancer
+C494,Malignant neoplasm of connective and soft tissue of abdomen,cancer
+C495,Malignant neoplasm of connective and soft tissue of pelvis,cancer
+C496,"Malignant neoplasm of connective and soft tissue of trunk, unspecified",cancer
+C498,Malignant neoplasm of overlapping sites of connective and soft tissue,cancer
+C499,"Malignant neoplasm of connective and soft tissue, unspecified",cancer
+C49A0,"Gastrointestinal stromal tumor, unspecified site",cancer
+C49A1,Gastrointestinal stromal tumor of esophagus,cancer
+C49A2,Gastrointestinal stromal tumor of stomach,cancer
+C49A3,Gastrointestinal stromal tumor of small intestine,cancer
+C49A4,Gastrointestinal stromal tumor of large intestine,cancer
+C49A5,Gastrointestinal stromal tumor of rectum,cancer
+C49A9,Gastrointestinal stromal tumor of other sites,cancer
+C4A0,Merkel cell carcinoma of lip,other
+C4A10,"Merkel cell carcinoma of unspecified eyelid, including canthus",other
+C4A20,Merkel cell carcinoma of unspecified ear and external auricular canal,other
+C4A30,Merkel cell carcinoma of unspecified part of face,other
+C4A39,Merkel cell carcinoma of other parts of face,other
+C4A4,Merkel cell carcinoma of scalp and neck,other
+C4A59,Merkel cell carcinoma of other part of trunk,other
+C4A60,"Merkel cell carcinoma of unspecified upper limb, including shoulder",other
+C4A70,"Merkel cell carcinoma of unspecified lower limb, including hip",other
+C4A8,Merkel cell carcinoma of overlapping sites,other
+C4A9,"Merkel cell carcinoma, unspecified",other
+C50019,"Malignant neoplasm of nipple and areola, unspecified female breast",cancer
+C50029,"Malignant neoplasm of nipple and areola, unspecified male breast",cancer
+C50119,Malignant neoplasm of central portion of unspecified female breast,cancer
+C50219,Malignant neoplasm of upper-inner quadrant of unspecified female breast,cancer
+C50319,Malignant neoplasm of lower-inner quadrant of unspecified female breast,cancer
+C50419,Malignant neoplasm of upper-outer quadrant of unspecified female breast,cancer
+C50519,Malignant neoplasm of lower-outer quadrant of unspecified female breast,cancer
+C50619,Malignant neoplasm of axillary tail of unspecified female breast,cancer
+C50819,Malignant neoplasm of overlapping sites of unspecified female breast,cancer
+C50919,Malignant neoplasm of unspecified site of unspecified female breast,cancer
+C50929,Malignant neoplasm of unspecified site of unspecified male breast,cancer
+C530,Malignant neoplasm of endocervix,cancer
+C531,Malignant neoplasm of exocervix,cancer
+C538,Malignant neoplasm of overlapping sites of cervix uteri,cancer
+C539,"Malignant neoplasm of cervix uteri, unspecified",cancer
+C540,Malignant neoplasm of isthmus uteri,cancer
+C541,Malignant neoplasm of endometrium,cancer
+C542,Malignant neoplasm of myometrium,cancer
+C543,Malignant neoplasm of fundus uteri,cancer
+C548,Malignant neoplasm of overlapping sites of corpus uteri,cancer
+C549,"Malignant neoplasm of corpus uteri, unspecified",cancer
+C700,Malignant neoplasm of cerebral meninges,cancer
+C701,Malignant neoplasm of spinal meninges,cancer
+C709,"Malignant neoplasm of meninges, unspecified",cancer
+C710,"Malignant neoplasm of cerebrum, except lobes and ventricles",cancer
+C711,Malignant neoplasm of frontal lobe,cancer
+C712,Malignant neoplasm of temporal lobe,cancer
+C713,Malignant neoplasm of parietal lobe,cancer
+C714,Malignant neoplasm of occipital lobe,cancer
+C715,Malignant neoplasm of cerebral ventricle,cancer
+C716,Malignant neoplasm of cerebellum,cancer
+C717,Malignant neoplasm of brain stem,cancer
+C718,Malignant neoplasm of overlapping sites of brain,cancer
+C719,"Malignant neoplasm of brain, unspecified",cancer
+C720,Malignant neoplasm of spinal cord,cancer
+C721,Malignant neoplasm of cauda equina,cancer
+C7250,Malignant neoplasm of unspecified cranial nerve,cancer
+C729,"Malignant neoplasm of central nervous system, unspecified",cancer
+C729,"Malignant neoplasm of central nervous system, unspecified",cancer
+C760,"Malignant neoplasm of head, face and neck",cancer
+C7A010,Malignant carcinoid tumor of the duodenum,cancer
+C7A011,Malignant carcinoid tumor of the jejunum,cancer
+C7A012,Malignant carcinoid tumor of the ileum,cancer
+C7A019,"Malignant carcinoid tumor of the small intestine, unspecified portion",cancer
+C7A020,Malignant carcinoid tumor of the appendix,cancer
+C7A021,Malignant carcinoid tumor of the cecum,cancer
+C7A022,Malignant carcinoid tumor of the ascending colon,cancer
+C7A023,Malignant carcinoid tumor of the transverse colon,cancer
+C7A024,Malignant carcinoid tumor of the descending colon,cancer
+C7A025,Malignant carcinoid tumor of the sigmoid colon,cancer
+C7A026,Malignant carcinoid tumor of the rectum,cancer
+C7A029,"Malignant carcinoid tumor of the large intestine, unspecified portion",cancer
+C7A090,Malignant carcinoid tumor of the bronchus and lung,cancer
+C7A092,Malignant carcinoid tumor of the stomach,cancer
+D0000,"Carcinoma in situ of oral cavity, unspecified site",other
+D0001,Carcinoma in situ of labial mucosa and vermilion border,other
+D0002,Carcinoma in situ of buccal mucosa,other
+D0003,Carcinoma in situ of gingiva and edentulous alveolar ridge,other
+D0004,Carcinoma in situ of soft palate,other
+D0005,Carcinoma in situ of hard palate,other
+D0006,Carcinoma in situ of floor of mouth,other
+D0007,Carcinoma in situ of tongue,other
+D0008,Carcinoma in situ of pharynx,other
+D002,Carcinoma in situ of stomach,other
+D010,Carcinoma in situ of colon,other
+D011,Carcinoma in situ of rectosigmoid junction,other
+D012,Carcinoma in situ of rectum,other
+D013,Carcinoma in situ of anus and anal canal,other
+D013,Carcinoma in situ of anus and anal canal,other
+D0140,Carcinoma in situ of unspecified part of intestine,other
+D0149,Carcinoma in situ of other parts of intestine,other
+D015,"Carcinoma in situ of liver, gallbladder and bile ducts",other
+D017,Carcinoma in situ of other specified digestive organs,other
+D019,"Carcinoma in situ of digestive organ, unspecified",other
+D020,Carcinoma in situ of larynx,other
+D021,Carcinoma in situ of trachea,other
+D0220,Carcinoma in situ of unspecified bronchus and lung,other
+D023,Carcinoma in situ of other parts of respiratory system,other
+D024,"Carcinoma in situ of respiratory system, unspecified",other
+D030,Melanoma in situ of lip,cancer
+D0310,"Melanoma in situ of unspecified eyelid, including canthus",cancer
+D0311,Code not found,other
+D0312,Code not found,other
+D0320,Melanoma in situ of unspecified ear and external auricular canal,cancer
+D0321,Melanoma in situ of right ear and external auricular canal,cancer
+D0322,Melanoma in situ of left ear and external auricular canal,cancer
+D0330,Melanoma in situ of unspecified part of face,cancer
+D0339,Melanoma in situ of other parts of face,cancer
+D034,Melanoma in situ of scalp and neck,cancer
+D0351,Melanoma in situ of anal skin,cancer
+D0352,Melanoma in situ of breast (skin) (soft tissue),cancer
+D0359,Melanoma in situ of other part of trunk,cancer
+D0360,"Melanoma in situ of unspecified upper limb, including shoulder",cancer
+D0361,"Melanoma in situ of right upper limb, including shoulder",cancer
+D0362,"Melanoma in situ of left upper limb, including shoulder",cancer
+D0370,"Melanoma in situ of unspecified lower limb, including hip",cancer
+D0371,"Melanoma in situ of right lower limb, including hip",cancer
+D0372,"Melanoma in situ of left lower limb, including hip",cancer
+D038,Melanoma in situ of other sites,cancer
+D039,"Melanoma in situ, unspecified",cancer
+D040,Carcinoma in situ of skin of lip,other
+D0410,"Carcinoma in situ of skin of unspecified eyelid, including canthus",other
+D0420,Carcinoma in situ of skin of unspecified ear and external auricular canal,other
+D0430,Carcinoma in situ of skin of unspecified part of face,other
+D0439,Carcinoma in situ of skin of other parts of face,other
+D044,Carcinoma in situ of skin of scalp and neck,other
+D045,Carcinoma in situ of skin of trunk,other
+D0460,"Carcinoma in situ of skin of unspecified upper limb, including shoulder",other
+D0470,"Carcinoma in situ of skin of unspecified lower limb, including hip",other
+D048,Carcinoma in situ of skin of other sites,other
+D049,"Carcinoma in situ of skin, unspecified",other
+D0590,Unspecified type of carcinoma in situ of unspecified breast,other
+D069,"Carcinoma in situ of cervix, unspecified",other
+D070,Carcinoma in situ of endometrium,other
+G92,Code not found,other
+G9341,Metabolic encephalopathy,other
+K7200,Acute and subacute hepatic failure without coma,other
+K7290,"Hepatic failure, unspecified without coma",other
+N170,Acute kidney failure with tubular necrosis,other
+N179,"Acute kidney failure, unspecified",other
+P369,"Bacterial sepsis of newborn, unspecified",sepsis
+R6510,Systemic inflammatory response syndrome (SIRS) of non-infectious origin without acute organ dysfunction,other
+R6511,Systemic inflammatory response syndrome (SIRS) of non-infectious origin with acute organ dysfunction,other
+R6520,Severe sepsis without septic shock,sepsis
+R6521,Severe sepsis with septic shock,sepsis
+R85610,Atypical squamous cells of undetermined significance on cytologic smear of anus (ASC-US),cancer
+R85611,Atypical squamous cells cannot exclude high grade squamous intraepithelial lesion on cytologic smear of anus (ASC-H),cancer
+R85612,Low grade squamous intraepithelial lesion on cytologic smear of anus (LGSIL),cancer
+R85613,High grade squamous intraepithelial lesion on cytologic smear of anus (HGSIL),cancer
+R85614,Cytologic evidence of malignancy on smear of anus,cancer
+R85619,Unspecified abnormal cytological findings in specimens from anus,cancer
+R8581,Anal high risk human papillomavirus (HPV) DNA test positive,other
+Z8500,Personal history of malignant neoplasm of unspecified digestive organ,cancer
+Z85028,Personal history of other malignant neoplasm of stomach,cancer
+Z85038,Personal history of other malignant neoplasm of large intestine,cancer
+Z85048,"Personal history of other malignant neoplasm of rectum, rectosigmoid junction, and anus",cancer
+Z8505,Personal history of malignant neoplasm of liver,cancer
+Z85068,Personal history of other malignant neoplasm of small intestine,cancer
+Z8507,Personal history of malignant neoplasm of pancreas,cancer
+Z8509,Personal history of malignant neoplasm of other digestive organs,cancer
+Z85118,Personal history of other malignant neoplasm of bronchus and lung,cancer
+Z8512,Personal history of malignant neoplasm of trachea,cancer
+Z8520,Personal history of malignant neoplasm of unspecified respiratory organ,cancer
+Z8521,Personal history of malignant neoplasm of larynx,cancer
+Z8522,"Personal history of malignant neoplasm of nasal cavities, middle ear, and accessory sinuses",cancer
+Z853,Personal history of malignant neoplasm of breast,cancer
+Z8542,Personal history of malignant neoplasm of other parts of uterus,cancer
+Z85810,Personal history of malignant neoplasm of tongue,cancer
+Z85818,"Personal history of malignant neoplasm of other sites of lip, oral cavity, and pharynx",cancer
+Z85819,"Personal history of malignant neoplasm of unspecified site of lip, oral cavity, and pharynx",cancer
+Z85820,Personal history of malignant melanoma of skin,cancer
+Z85828,Personal history of other malignant neoplasm of skin,cancer
+Z85841,Personal history of malignant neoplasm of brain,cancer
+Z85848,Personal history of malignant neoplasm of other parts of nervous tissue,cancer
+R87610,Atypical squamous cells of undetermined significance on cytologic smear of cervix (ASC-US),cancer
+R87611,Atypical squamous cells cannot exclude high grade squamous intraepithelial lesion on cytologic smear of cervix (ASC-H),cancer
+R87612,Low grade squamous intraepithelial lesion on cytologic smear of cervix (LGSIL),cancer
+R87613,High grade squamous intraepithelial lesion on cytologic smear of cervix (HGSIL),cancer
+R87810,Cervical high risk human papillomavirus (HPV) DNA test positive,other
+R87614,Cytologic evidence of malignancy on smear of cervix,cancer
+Z8541,Personal history of malignant neoplasm of cervix uteri,cancer
+C569,Malignant neoplasm of unspecified ovary,cancer
+Z8543,Personal history of malignant neoplasm of ovary,cancer
+C5700,Malignant neoplasm of unspecified fallopian tube,cancer
+C5710,Malignant neoplasm of unspecified broad ligament,cancer
+C573,Malignant neoplasm of parametrium,cancer
+C5720,Malignant neoplasm of unspecified round ligament,cancer
+C574,"Malignant neoplasm of uterine adnexa, unspecified",cancer
+C574,"Malignant neoplasm of uterine adnexa, unspecified",cancer
+C52,Malignant neoplasm of vagina,cancer
+C510,Malignant neoplasm of labium majus,cancer
+C511,Malignant neoplasm of labium minus,cancer
+C512,Malignant neoplasm of clitoris,cancer
+C519,"Malignant neoplasm of vulva, unspecified",cancer
+C577,Malignant neoplasm of other specified female genital organs,cancer
+C578,Malignant neoplasm of overlapping sites of female genital organs,cancer
+C579,"Malignant neoplasm of female genital organ, unspecified",cancer
+D0730,Carcinoma in situ of unspecified female genital organs,other
+D072,Carcinoma in situ of vagina,other
+D071,Carcinoma in situ of vulva,other
+D0739,Carcinoma in situ of other female genital organs,other
+R87624,Cytologic evidence of malignancy on smear of vagina,cancer
+Z8540,Personal history of malignant neoplasm of unspecified female genital organ,cancer
+Z8544,Personal history of malignant neoplasm of other female genital organs,cancer
+C61,Malignant neoplasm of prostate,cancer
+D075,Carcinoma in situ of prostate,other
+Z8546,Personal history of malignant neoplasm of prostate,cancer
+C6200,Malignant neoplasm of unspecified undescended testis,cancer
+C6210,Malignant neoplasm of unspecified descended testis,cancer
+C6290,"Malignant neoplasm of unspecified testis, unspecified whether descended or undescended",cancer
+Z8547,Personal history of malignant neoplasm of testis,cancer
+C600,Malignant neoplasm of prepuce,cancer
+C601,Malignant neoplasm of glans penis,cancer
+C602,Malignant neoplasm of body of penis,cancer
+C609,"Malignant neoplasm of penis, unspecified",cancer
+C6300,Malignant neoplasm of unspecified epididymis,cancer
+C6310,Malignant neoplasm of unspecified spermatic cord,cancer
+C632,Malignant neoplasm of scrotum,cancer
+C608,Malignant neoplasm of overlapping sites of penis,cancer
+C637,Malignant neoplasm of other specified male genital organs,cancer
+C638,Malignant neoplasm of overlapping sites of male genital organs,cancer
+C639,"Malignant neoplasm of male genital organ, unspecified",cancer
+D074,Carcinoma in situ of penis,other
+D0760,Carcinoma in situ of unspecified male genital organs,other
+D0769,Carcinoma in situ of other male genital organs,other
+Z8545,Personal history of malignant neoplasm of unspecified male genital organ,cancer
+Z8548,Personal history of malignant neoplasm of epididymis,cancer
+Z8549,Personal history of malignant neoplasm of other male genital organs,cancer
+C670,Malignant neoplasm of trigone of bladder,cancer
+C671,Malignant neoplasm of dome of bladder,cancer
+C672,Malignant neoplasm of lateral wall of bladder,cancer
+C673,Malignant neoplasm of anterior wall of bladder,cancer
+C674,Malignant neoplasm of posterior wall of bladder,cancer
+C675,Malignant neoplasm of bladder neck,cancer
+C676,Malignant neoplasm of ureteric orifice,cancer
+C677,Malignant neoplasm of urachus,cancer
+C678,Malignant neoplasm of overlapping sites of bladder,cancer
+C679,"Malignant neoplasm of bladder, unspecified",cancer
+D090,Carcinoma in situ of bladder,other
+Z8551,Personal history of malignant neoplasm of bladder,cancer
+C649,"Malignant neoplasm of unspecified kidney, except renal pelvis",cancer
+C659,Malignant neoplasm of unspecified renal pelvis,cancer
+C7A093,Malignant carcinoid tumor of the kidney,cancer
+Z85528,Personal history of other malignant neoplasm of kidney,cancer
+Z8553,Personal history of malignant neoplasm of renal pelvis,cancer
+C669,Malignant neoplasm of unspecified ureter,cancer
+C680,Malignant neoplasm of urethra,cancer
+C681,Malignant neoplasm of paraurethral glands,cancer
+C688,Malignant neoplasm of overlapping sites of urinary organs,cancer
+C689,"Malignant neoplasm of urinary organ, unspecified",cancer
+D0910,Carcinoma in situ of unspecified urinary organ,other
+D0919,Carcinoma in situ of other urinary organs,other
+Z8550,Personal history of malignant neoplasm of unspecified urinary tract organ,cancer
+Z8554,Personal history of malignant neoplasm of ureter,cancer
+Z8559,Personal history of malignant neoplasm of other urinary tract organ,cancer
+C73,Malignant neoplasm of thyroid gland,cancer
+E3122,Multiple endocrine neoplasia [MEN] type IIA,cancer
+E3123,Multiple endocrine neoplasia [MEN] type IIB,cancer
+Z85850,Personal history of malignant neoplasm of thyroid,cancer
+C8170,"Other Hodgkin lymphoma, unspecified site",cancer
+C8179,"Other Hodgkin lymphoma, extranodal and solid organ sites",cancer
+C8171,"Other Hodgkin lymphoma, lymph nodes of head, face, and neck",cancer
+C8172,"Other Hodgkin lymphoma, intrathoracic lymph nodes",cancer
+C8173,"Other Hodgkin lymphoma, intra-abdominal lymph nodes",cancer
+C8174,"Other Hodgkin lymphoma, lymph nodes of axilla and upper limb",cancer
+C8175,"Other Hodgkin lymphoma, lymph nodes of inguinal region and lower limb",cancer
+C8176,"Other Hodgkin lymphoma, intrapelvic lymph nodes",cancer
+C8177,"Other Hodgkin lymphoma, spleen",cancer
+C8178,"Other Hodgkin lymphoma, lymph nodes of multiple sites",cancer
+C8179,"Other Hodgkin lymphoma, extranodal and solid organ sites",cancer
+C8171,"Other Hodgkin lymphoma, lymph nodes of head, face, and neck",cancer
+C8172,"Other Hodgkin lymphoma, intrathoracic lymph nodes",cancer
+C8173,"Other Hodgkin lymphoma, intra-abdominal lymph nodes",cancer
+C8174,"Other Hodgkin lymphoma, lymph nodes of axilla and upper limb",cancer
+C8175,"Other Hodgkin lymphoma, lymph nodes of inguinal region and lower limb",cancer
+C8176,"Other Hodgkin lymphoma, intrapelvic lymph nodes",cancer
+C8177,"Other Hodgkin lymphoma, spleen",cancer
+C8178,"Other Hodgkin lymphoma, lymph nodes of multiple sites",cancer
+C8179,"Other Hodgkin lymphoma, extranodal and solid organ sites",cancer
+C8171,"Other Hodgkin lymphoma, lymph nodes of head, face, and neck",cancer
+C8172,"Other Hodgkin lymphoma, intrathoracic lymph nodes",cancer
+C8173,"Other Hodgkin lymphoma, intra-abdominal lymph nodes",cancer
+C8174,"Other Hodgkin lymphoma, lymph nodes of axilla and upper limb",cancer
+C8175,"Other Hodgkin lymphoma, lymph nodes of inguinal region and lower limb",cancer
+C8176,"Other Hodgkin lymphoma, intrapelvic lymph nodes",cancer
+C8177,"Other Hodgkin lymphoma, spleen",cancer
+C8178,"Other Hodgkin lymphoma, lymph nodes of multiple sites",cancer
+C8100,"Nodular lymphocyte predominant Hodgkin lymphoma, unspecified site",cancer
+C8109,"Nodular lymphocyte predominant Hodgkin lymphoma, extranodal and solid organ sites",cancer
+C8140,"Lymphocyte-rich Hodgkin lymphoma, unspecified site",cancer
+C8149,"Lymphocyte-rich Hodgkin lymphoma, extranodal and solid organ sites",cancer
+C8101,"Nodular lymphocyte predominant Hodgkin lymphoma, lymph nodes of head, face, and neck",cancer
+C8141,"Lymphocyte-rich Hodgkin lymphoma, lymph nodes of head, face, and neck",cancer
+C8102,"Nodular lymphocyte predominant Hodgkin lymphoma, intrathoracic lymph nodes",cancer
+C8142,"Lymphocyte-rich Hodgkin lymphoma, intrathoracic lymph nodes",cancer
+C8103,"Nodular lymphocyte predominant Hodgkin lymphoma, intra-abdominal lymph nodes",cancer
+C8143,"Lymphocyte-rich Hodgkin lymphoma, intra-abdominal lymph nodes",cancer
+C8104,"Nodular lymphocyte predominant Hodgkin lymphoma, lymph nodes of axilla and upper limb",cancer
+C8144,"Lymphocyte-rich Hodgkin lymphoma, lymph nodes of axilla and upper limb",cancer
+C8105,"Nodular lymphocyte predominant Hodgkin lymphoma, lymph nodes of inguinal region and lower limb",cancer
+C8145,"Lymphocyte-rich Hodgkin lymphoma, lymph nodes of inguinal region and lower limb",cancer
+C8106,"Nodular lymphocyte predominant Hodgkin lymphoma, intrapelvic lymph nodes",cancer
+C8146,"Lymphocyte-rich Hodgkin lymphoma, intrapelvic lymph nodes",cancer
+C8107,"Nodular lymphocyte predominant Hodgkin lymphoma, spleen",cancer
+C8147,"Lymphocyte-rich Hodgkin lymphoma, spleen",cancer
+C8108,"Nodular lymphocyte predominant Hodgkin lymphoma, lymph nodes of multiple sites",cancer
+C8148,"Lymphocyte-rich Hodgkin lymphoma, lymph nodes of multiple sites",cancer
+C8110,"Nodular sclerosis Hodgkin lymphoma, unspecified site",cancer
+C8119,"Nodular sclerosis Hodgkin lymphoma, extranodal and solid organ sites",cancer
+C8111,"Nodular sclerosis Hodgkin lymphoma, lymph nodes of head, face, and neck",cancer
+C8112,"Nodular sclerosis Hodgkin lymphoma, intrathoracic lymph nodes",cancer
+C8113,"Nodular sclerosis Hodgkin lymphoma, intra-abdominal lymph nodes",cancer
+C8114,"Nodular sclerosis Hodgkin lymphoma, lymph nodes of axilla and upper limb",cancer
+C8115,"Nodular sclerosis Hodgkin lymphoma, lymph nodes of inguinal region and lower limb",cancer
+C8116,"Nodular sclerosis Hodgkin lymphoma, intrapelvic lymph nodes",cancer
+C8117,"Nodular sclerosis Hodgkin lymphoma, spleen",cancer
+C8118,"Nodular sclerosis Hodgkin lymphoma, lymph nodes of multiple sites",cancer
+C8120,"Mixed cellularity Hodgkin lymphoma, unspecified site",cancer
+C8129,"Mixed cellularity Hodgkin lymphoma, extranodal and solid organ sites",cancer
+C8121,"Mixed cellularity Hodgkin lymphoma, lymph nodes of head, face, and neck",cancer
+C8122,"Mixed cellularity Hodgkin lymphoma, intrathoracic lymph nodes",cancer
+C8123,"Mixed cellularity Hodgkin lymphoma, intra-abdominal lymph nodes",cancer
+C8124,"Mixed cellularity Hodgkin lymphoma, lymph nodes of axilla and upper limb",cancer
+C8125,"Mixed cellularity Hodgkin lymphoma, lymph nodes of inguinal region and lower limb",cancer
+C8126,"Mixed cellularity Hodgkin lymphoma, intrapelvic lymph nodes",cancer
+C8127,"Mixed cellularity Hodgkin lymphoma, spleen",cancer
+C8128,"Mixed cellularity Hodgkin lymphoma, lymph nodes of multiple sites",cancer
+C8130,"Lymphocyte depleted Hodgkin lymphoma, unspecified site",cancer
+C8139,"Lymphocyte depleted Hodgkin lymphoma, extranodal and solid organ sites",cancer
+C8131,"Lymphocyte depleted Hodgkin lymphoma, lymph nodes of head, face, and neck",cancer
+C8132,"Lymphocyte depleted Hodgkin lymphoma, intrathoracic lymph nodes",cancer
+C8133,"Lymphocyte depleted Hodgkin lymphoma, intra-abdominal lymph nodes",cancer
+C8134,"Lymphocyte depleted Hodgkin lymphoma, lymph nodes of axilla and upper limb",cancer
+C8135,"Lymphocyte depleted Hodgkin lymphoma, lymph nodes of inguinal region and lower limb",cancer
+C8136,"Lymphocyte depleted Hodgkin lymphoma, intrapelvic lymph nodes",cancer
+C8137,"Lymphocyte depleted Hodgkin lymphoma, spleen",cancer
+C8138,"Lymphocyte depleted Hodgkin lymphoma, lymph nodes of multiple sites",cancer
+C8190,"Hodgkin lymphoma, unspecified, unspecified site",cancer
+C8199,"Hodgkin lymphoma, unspecified, extranodal and solid organ sites",cancer
+C8191,"Hodgkin lymphoma, unspecified, lymph nodes of head, face, and neck",cancer
+C8192,"Hodgkin lymphoma, unspecified, intrathoracic lymph nodes",cancer
+C8193,"Hodgkin lymphoma, unspecified, intra-abdominal lymph nodes",cancer
+C8194,"Hodgkin lymphoma, unspecified, lymph nodes of axilla and upper limb",cancer
+C8195,"Hodgkin lymphoma, unspecified, lymph nodes of inguinal region and lower limb",cancer
+C8196,"Hodgkin lymphoma, unspecified, intrapelvic lymph nodes",cancer
+C8197,"Hodgkin lymphoma, unspecified, spleen",cancer
+C8198,"Hodgkin lymphoma, unspecified, lymph nodes of multiple sites",cancer
+Z8571,Personal history of Hodgkin lymphoma,cancer
+C8330,"Diffuse large B-cell lymphoma, unspecified site",cancer
+C8339,Code not found,other
+C8331,"Diffuse large B-cell lymphoma, lymph nodes of head, face, and neck",cancer
+C8332,"Diffuse large B-cell lymphoma, intrathoracic lymph nodes",cancer
+C8333,"Diffuse large B-cell lymphoma, intra-abdominal lymph nodes",cancer
+C8334,"Diffuse large B-cell lymphoma, lymph nodes of axilla and upper limb",cancer
+C8335,"Diffuse large B-cell lymphoma, lymph nodes of inguinal region and lower limb",cancer
+C8336,"Diffuse large B-cell lymphoma, intrapelvic lymph nodes",cancer
+C8337,"Diffuse large B-cell lymphoma, spleen",cancer
+C8338,"Diffuse large B-cell lymphoma, lymph nodes of multiple sites",cancer
+C8350,"Lymphoblastic (diffuse) lymphoma, unspecified site",cancer
+C8359,"Lymphoblastic (diffuse) lymphoma, extranodal and solid organ sites",cancer
+C8351,"Lymphoblastic (diffuse) lymphoma, lymph nodes of head, face, and neck",cancer
+C8352,"Lymphoblastic (diffuse) lymphoma, intrathoracic lymph nodes",cancer
+C8353,"Lymphoblastic (diffuse) lymphoma, intra-abdominal lymph nodes",cancer
+C8354,"Lymphoblastic (diffuse) lymphoma, lymph nodes of axilla and upper limb",cancer
+C8355,"Lymphoblastic (diffuse) lymphoma, lymph nodes of inguinal region and lower limb",cancer
+C8356,"Lymphoblastic (diffuse) lymphoma, intrapelvic lymph nodes",cancer
+C8357,"Lymphoblastic (diffuse) lymphoma, spleen",cancer
+C8358,"Lymphoblastic (diffuse) lymphoma, lymph nodes of multiple sites",cancer
+C8370,"Burkitt lymphoma, unspecified site",cancer
+C8379,"Burkitt lymphoma, extranodal and solid organ sites",cancer
+C8371,"Burkitt lymphoma, lymph nodes of head, face, and neck",cancer
+C8372,"Burkitt lymphoma, intrathoracic lymph nodes",cancer
+C8373,"Burkitt lymphoma, intra-abdominal lymph nodes",cancer
+C8374,"Burkitt lymphoma, lymph nodes of axilla and upper limb",cancer
+C8375,"Burkitt lymphoma, lymph nodes of inguinal region and lower limb",cancer
+C8376,"Burkitt lymphoma, intrapelvic lymph nodes",cancer
+C8377,"Burkitt lymphoma, spleen",cancer
+C8378,"Burkitt lymphoma, lymph nodes of multiple sites",cancer
+C8380,"Other non-follicular lymphoma, unspecified site",cancer
+C8389,"Other non-follicular lymphoma, extranodal and solid organ sites",cancer
+C8381,"Other non-follicular lymphoma, lymph nodes of head, face, and neck",cancer
+C8382,"Other non-follicular lymphoma, intrathoracic lymph nodes",cancer
+C8383,"Other non-follicular lymphoma, intra-abdominal lymph nodes",cancer
+C8384,"Other non-follicular lymphoma, lymph nodes of axilla and upper limb",cancer
+C8385,"Other non-follicular lymphoma, lymph nodes of inguinal region and lower limb",cancer
+C8386,"Other non-follicular lymphoma, intrapelvic lymph nodes",cancer
+C8387,"Other non-follicular lymphoma, spleen",cancer
+C8388,"Other non-follicular lymphoma, lymph nodes of multiple sites",cancer
+C8310,"Mantle cell lymphoma, unspecified site",cancer
+C8319,"Mantle cell lymphoma, extranodal and solid organ sites",cancer
+C8311,"Mantle cell lymphoma, lymph nodes of head, face, and neck",cancer
+C8312,"Mantle cell lymphoma, intrathoracic lymph nodes",cancer
+C8313,"Mantle cell lymphoma, intra-abdominal lymph nodes",cancer
+C8314,"Mantle cell lymphoma, lymph nodes of axilla and upper limb",cancer
+C8315,"Mantle cell lymphoma, lymph nodes of inguinal region and lower limb",cancer
+C8316,"Mantle cell lymphoma, intrapelvic lymph nodes",cancer
+C8317,"Mantle cell lymphoma, spleen",cancer
+C8318,"Mantle cell lymphoma, lymph nodes of multiple sites",cancer
+C8339,Code not found,other
+C8380,"Other non-follicular lymphoma, unspecified site",cancer
+C8389,"Other non-follicular lymphoma, extranodal and solid organ sites",cancer
+C8331,"Diffuse large B-cell lymphoma, lymph nodes of head, face, and neck",cancer
+C8381,"Other non-follicular lymphoma, lymph nodes of head, face, and neck",cancer
+C8332,"Diffuse large B-cell lymphoma, intrathoracic lymph nodes",cancer
+C8382,"Other non-follicular lymphoma, intrathoracic lymph nodes",cancer
+C8333,"Diffuse large B-cell lymphoma, intra-abdominal lymph nodes",cancer
+C8383,"Other non-follicular lymphoma, intra-abdominal lymph nodes",cancer
+C8334,"Diffuse large B-cell lymphoma, lymph nodes of axilla and upper limb",cancer
+C8384,"Other non-follicular lymphoma, lymph nodes of axilla and upper limb",cancer
+C8335,"Diffuse large B-cell lymphoma, lymph nodes of inguinal region and lower limb",cancer
+C8385,"Other non-follicular lymphoma, lymph nodes of inguinal region and lower limb",cancer
+C8336,"Diffuse large B-cell lymphoma, intrapelvic lymph nodes",cancer
+C8386,"Other non-follicular lymphoma, intrapelvic lymph nodes",cancer
+C8337,"Diffuse large B-cell lymphoma, spleen",cancer
+C8387,"Other non-follicular lymphoma, spleen",cancer
+C8338,"Diffuse large B-cell lymphoma, lymph nodes of multiple sites",cancer
+C8388,"Other non-follicular lymphoma, lymph nodes of multiple sites",cancer
+C8460,"Anaplastic large cell lymphoma, ALK-positive, unspecified site",cancer
+C8469,"Anaplastic large cell lymphoma, ALK-positive, extranodal and solid organ sites",cancer
+C8470,"Anaplastic large cell lymphoma, ALK-negative, unspecified site",cancer
+C8479,"Anaplastic large cell lymphoma, ALK-negative, extranodal and solid organ sites",cancer
+C8461,"Anaplastic large cell lymphoma, ALK-positive, lymph nodes of head, face, and neck",cancer
+C8471,"Anaplastic large cell lymphoma, ALK-negative, lymph nodes of head, face, and neck",cancer
+C8462,"Anaplastic large cell lymphoma, ALK-positive, intrathoracic lymph nodes",cancer
+C8472,"Anaplastic large cell lymphoma, ALK-negative, intrathoracic lymph nodes",cancer
+C8463,"Anaplastic large cell lymphoma, ALK-positive, intra-abdominal lymph nodes",cancer
+C8473,"Anaplastic large cell lymphoma, ALK-negative, intra-abdominal lymph nodes",cancer
+C8464,"Anaplastic large cell lymphoma, ALK-positive, lymph nodes of axilla and upper limb",cancer
+C8474,"Anaplastic large cell lymphoma, ALK-negative, lymph nodes of axilla and upper limb",cancer
+C8465,"Anaplastic large cell lymphoma, ALK-positive, lymph nodes of inguinal region and lower limb",cancer
+C8475,"Anaplastic large cell lymphoma, ALK-negative, lymph nodes of inguinal region and lower limb",cancer
+C8466,"Anaplastic large cell lymphoma, ALK-positive, intrapelvic lymph nodes",cancer
+C8476,"Anaplastic large cell lymphoma, ALK-negative, intrapelvic lymph nodes",cancer
+C8467,"Anaplastic large cell lymphoma, ALK-positive, spleen",cancer
+C8477,"Anaplastic large cell lymphoma, ALK-negative, spleen",cancer
+C8468,"Anaplastic large cell lymphoma, ALK-positive, lymph nodes of multiple sites",cancer
+C8478,"Anaplastic large cell lymphoma, ALK-negative, lymph nodes of multiple sites",cancer
+C8339,Code not found,other
+C8331,"Diffuse large B-cell lymphoma, lymph nodes of head, face, and neck",cancer
+C8332,"Diffuse large B-cell lymphoma, intrathoracic lymph nodes",cancer
+C8333,"Diffuse large B-cell lymphoma, intra-abdominal lymph nodes",cancer
+C8334,"Diffuse large B-cell lymphoma, lymph nodes of axilla and upper limb",cancer
+C8335,"Diffuse large B-cell lymphoma, lymph nodes of inguinal region and lower limb",cancer
+C8336,"Diffuse large B-cell lymphoma, intrapelvic lymph nodes",cancer
+C8337,"Diffuse large B-cell lymphoma, spleen",cancer
+C8338,"Diffuse large B-cell lymphoma, lymph nodes of multiple sites",cancer
+C8380,"Other non-follicular lymphoma, unspecified site",cancer
+C8389,"Other non-follicular lymphoma, extranodal and solid organ sites",cancer
+C8381,"Other non-follicular lymphoma, lymph nodes of head, face, and neck",cancer
+C8382,"Other non-follicular lymphoma, intrathoracic lymph nodes",cancer
+C8383,"Other non-follicular lymphoma, intra-abdominal lymph nodes",cancer
+C8384,"Other non-follicular lymphoma, lymph nodes of axilla and upper limb",cancer
+C8385,"Other non-follicular lymphoma, lymph nodes of inguinal region and lower limb",cancer
+C8386,"Other non-follicular lymphoma, intrapelvic lymph nodes",cancer
+C8387,"Other non-follicular lymphoma, spleen",cancer
+C8388,"Other non-follicular lymphoma, lymph nodes of multiple sites",cancer
+C8290,"Follicular lymphoma, unspecified, unspecified site",cancer
+C8299,"Follicular lymphoma, unspecified, extranodal and solid organ sites",cancer
+C8291,"Follicular lymphoma, unspecified, lymph nodes of head, face, and neck",cancer
+C8292,"Follicular lymphoma, unspecified, intrathoracic lymph nodes",cancer
+C8293,"Follicular lymphoma, unspecified, intra-abdominal lymph nodes",cancer
+C8294,"Follicular lymphoma, unspecified, lymph nodes of axilla and upper limb",cancer
+C8295,"Follicular lymphoma, unspecified, lymph nodes of inguinal region and lower limb",cancer
+C8296,"Follicular lymphoma, unspecified, intrapelvic lymph nodes",cancer
+C8297,"Follicular lymphoma, unspecified, spleen",cancer
+C8298,"Follicular lymphoma, unspecified, lymph nodes of multiple sites",cancer
+C8400,"Mycosis fungoides, unspecified site",other
+C8409,"Mycosis fungoides, extranodal and solid organ sites",other
+C8401,"Mycosis fungoides, lymph nodes of head, face, and neck",other
+C8402,"Mycosis fungoides, intrathoracic lymph nodes",other
+C8403,"Mycosis fungoides, intra-abdominal lymph nodes",other
+C8404,"Mycosis fungoides, lymph nodes of axilla and upper limb",other
+C8405,"Mycosis fungoides, lymph nodes of inguinal region and lower limb",other
+C8406,"Mycosis fungoides, intrapelvic lymph nodes",other
+C8407,"Mycosis fungoides, spleen",other
+C8408,"Mycosis fungoides, lymph nodes of multiple sites",other
+C8410,"Sezary disease, unspecified site",other
+C8419,"Sezary disease, extranodal and solid organ sites",other
+C8411,"Sezary disease, lymph nodes of head, face, and neck",other
+C8412,"Sezary disease, intrathoracic lymph nodes",other
+C8413,"Sezary disease, intra-abdominal lymph nodes",other
+C8414,"Sezary disease, lymph nodes of axilla and upper limb",other
+C8415,"Sezary disease, lymph nodes of inguinal region and lower limb",other
+C8416,"Sezary disease, intrapelvic lymph nodes",other
+C8417,"Sezary disease, spleen",other
+C8418,"Sezary disease, lymph nodes of multiple sites",other
+C8440,"Peripheral T-cell lymphoma, not elsewhere classified, unspecified site",cancer
+C8449,"Peripheral T-cell lymphoma, not elsewhere classified, extranodal and solid organ sites",cancer
+C8441,"Peripheral T-cell lymphoma, not elsewhere classified, lymph nodes of head, face, and neck",cancer
+C8442,"Peripheral T-cell lymphoma, not elsewhere classified, intrathoracic lymph nodes",cancer
+C8443,"Peripheral T-cell lymphoma, not elsewhere classified, intra-abdominal lymph nodes",cancer
+C8444,"Peripheral T-cell lymphoma, not elsewhere classified, lymph nodes of axilla and upper limb",cancer
+C8445,"Peripheral T-cell lymphoma, not elsewhere classified, lymph nodes of inguinal region and lower limb",cancer
+C8446,"Peripheral T-cell lymphoma, not elsewhere classified, intrapelvic lymph nodes",cancer
+C8447,"Peripheral T-cell lymphoma, not elsewhere classified, spleen",cancer
+C8448,"Peripheral T-cell lymphoma, not elsewhere classified, lymph nodes of multiple sites",cancer
+C8580,"Other specified types of non-Hodgkin lymphoma, unspecified site",cancer
+C8589,"Other specified types of non-Hodgkin lymphoma, extranodal and solid organ sites",cancer
+C8581,"Other specified types of non-Hodgkin lymphoma, lymph nodes of head, face, and neck",cancer
+C8582,"Other specified types of non-Hodgkin lymphoma, intrathoracic lymph nodes",cancer
+C8493,"Mature T/NK-cell lymphomas, unspecified, intra-abdominal lymph nodes",cancer
+C8583,"Other specified types of non-Hodgkin lymphoma, intra-abdominal lymph nodes",cancer
+C8584,"Other specified types of non-Hodgkin lymphoma, lymph nodes of axilla and upper limb",cancer
+C8585,"Other specified types of non-Hodgkin lymphoma, lymph nodes of inguinal region and lower limb",cancer
+C8586,"Other specified types of non-Hodgkin lymphoma, intrapelvic lymph nodes",cancer
+C8587,"Other specified types of non-Hodgkin lymphoma, spleen",cancer
+C8588,"Other specified types of non-Hodgkin lymphoma, lymph nodes of multiple sites",cancer
+C964,Sarcoma of dendritic cells (accessory cells),cancer
+C969,"Malignant neoplasm of lymphoid, hematopoietic and related tissue, unspecified",cancer
+C96Z,"Other specified malignant neoplasms of lymphoid, hematopoietic and related tissue",cancer
+C969,"Malignant neoplasm of lymphoid, hematopoietic and related tissue, unspecified",cancer
+C96Z,"Other specified malignant neoplasms of lymphoid, hematopoietic and related tissue",cancer
+C969,"Malignant neoplasm of lymphoid, hematopoietic and related tissue, unspecified",cancer
+C96Z,"Other specified malignant neoplasms of lymphoid, hematopoietic and related tissue",cancer
+C969,"Malignant neoplasm of lymphoid, hematopoietic and related tissue, unspecified",cancer
+C96Z,"Other specified malignant neoplasms of lymphoid, hematopoietic and related tissue",cancer
+C969,"Malignant neoplasm of lymphoid, hematopoietic and related tissue, unspecified",cancer
+C96Z,"Other specified malignant neoplasms of lymphoid, hematopoietic and related tissue",cancer
+C969,"Malignant neoplasm of lymphoid, hematopoietic and related tissue, unspecified",cancer
+C96Z,"Other specified malignant neoplasms of lymphoid, hematopoietic and related tissue",cancer
+C969,"Malignant neoplasm of lymphoid, hematopoietic and related tissue, unspecified",cancer
+C96Z,"Other specified malignant neoplasms of lymphoid, hematopoietic and related tissue",cancer
+C969,"Malignant neoplasm of lymphoid, hematopoietic and related tissue, unspecified",cancer
+C96Z,"Other specified malignant neoplasms of lymphoid, hematopoietic and related tissue",cancer
+C969,"Malignant neoplasm of lymphoid, hematopoietic and related tissue, unspecified",cancer
+C96Z,"Other specified malignant neoplasms of lymphoid, hematopoietic and related tissue",cancer
+Z8579,"Personal history of other malignant neoplasms of lymphoid, hematopoietic and related tissues",cancer
+Z85831,Personal history of malignant neoplasm of soft tissue,cancer
+Z8579,"Personal history of other malignant neoplasms of lymphoid, hematopoietic and related tissues",cancer
+C9140,Hairy cell leukemia not having achieved remission,cancer
+C9141,"Hairy cell leukemia, in remission",cancer
+C9140,Hairy cell leukemia not having achieved remission,cancer
+C9140,Hairy cell leukemia not having achieved remission,cancer
+C9140,Hairy cell leukemia not having achieved remission,cancer
+C9140,Hairy cell leukemia not having achieved remission,cancer
+C9140,Hairy cell leukemia not having achieved remission,cancer
+C9140,Hairy cell leukemia not having achieved remission,cancer
+C9140,Hairy cell leukemia not having achieved remission,cancer
+C9140,Hairy cell leukemia not having achieved remission,cancer
+C9010,Plasma cell leukemia not having achieved remission,cancer
+C9011,Plasma cell leukemia in remission,cancer
+C9012,Plasma cell leukemia in relapse,cancer
+C9100,Acute lymphoblastic leukemia not having achieved remission,cancer
+C9101,"Acute lymphoblastic leukemia, in remission",cancer
+C9102,"Acute lymphoblastic leukemia, in relapse",cancer
+C9110,Chronic lymphocytic leukemia of B-cell type not having achieved remission,cancer
+C9111,Chronic lymphocytic leukemia of B-cell type in remission,cancer
+C9112,Chronic lymphocytic leukemia of B-cell type in relapse,cancer
+C91Z0,Other lymphoid leukemia not having achieved remission,cancer
+C91Z1,"Other lymphoid leukemia, in remission",cancer
+C91Z2,"Other lymphoid leukemia, in relapse",cancer
+C91Z0,Other lymphoid leukemia not having achieved remission,cancer
+C91Z1,"Other lymphoid leukemia, in remission",cancer
+C91Z2,"Other lymphoid leukemia, in relapse",cancer
+C9190,"Lymphoid leukemia, unspecified not having achieved remission",cancer
+C9191,"Lymphoid leukemia, unspecified, in remission",cancer
+C9192,"Lymphoid leukemia, unspecified, in relapse",cancer
+C9200,"Acute myeloblastic leukemia, not having achieved remission",cancer
+C9240,"Acute promyelocytic leukemia, not having achieved remission",cancer
+C9250,"Acute myelomonocytic leukemia, not having achieved remission",cancer
+C9201,"Acute myeloblastic leukemia, in remission",cancer
+C9241,"Acute promyelocytic leukemia, in remission",cancer
+C9251,"Acute myelomonocytic leukemia, in remission",cancer
+C9202,"Acute myeloblastic leukemia, in relapse",cancer
+C9242,"Acute promyelocytic leukemia, in relapse",cancer
+C9252,"Acute myelomonocytic leukemia, in relapse",cancer
+C9210,"Chronic myeloid leukemia, BCR/ABL-positive, not having achieved remission",cancer
+C9211,"Chronic myeloid leukemia, BCR/ABL-positive, in remission",cancer
+C9212,"Chronic myeloid leukemia, BCR/ABL-positive, in relapse",cancer
+C9220,"Atypical chronic myeloid leukemia, BCR/ABL-negative, not having achieved remission",cancer
+C9221,"Atypical chronic myeloid leukemia, BCR/ABL-negative, in remission",cancer
+C9222,"Atypical chronic myeloid leukemia, BCR/ABL-negative, in relapse",cancer
+C9230,"Myeloid sarcoma, not having achieved remission",cancer
+C9231,"Myeloid sarcoma, in remission",cancer
+C9232,"Myeloid sarcoma, in relapse",cancer
+C92Z0,Other myeloid leukemia not having achieved remission,cancer
+C92Z1,"Other myeloid leukemia, in remission",cancer
+C92Z2,"Other myeloid leukemia, in relapse",cancer
+C9290,"Myeloid leukemia, unspecified, not having achieved remission",cancer
+C9291,"Myeloid leukemia, unspecified in remission",cancer
+C9292,"Myeloid leukemia, unspecified in relapse",cancer
+C9300,"Acute monoblastic/monocytic leukemia, not having achieved remission",cancer
+C9301,"Acute monoblastic/monocytic leukemia, in remission",cancer
+C9302,"Acute monoblastic/monocytic leukemia, in relapse",cancer
+C9310,Chronic myelomonocytic leukemia not having achieved remission,cancer
+C9311,"Chronic myelomonocytic leukemia, in remission",cancer
+C9312,"Chronic myelomonocytic leukemia, in relapse",cancer
+C9390,"Monocytic leukemia, unspecified, not having achieved remission",cancer
+C9391,"Monocytic leukemia, unspecified in remission",cancer
+C9392,"Monocytic leukemia, unspecified in relapse",cancer
+C93Z0,"Other monocytic leukemia, not having achieved remission",cancer
+C93Z1,"Other monocytic leukemia, in remission",cancer
+C93Z2,"Other monocytic leukemia, in relapse",cancer
+C9390,"Monocytic leukemia, unspecified, not having achieved remission",cancer
+C9391,"Monocytic leukemia, unspecified in remission",cancer
+C9392,"Monocytic leukemia, unspecified in relapse",cancer
+C9400,"Acute erythroid leukemia, not having achieved remission",cancer
+C9401,"Acute erythroid leukemia, in remission",cancer
+C9402,"Acute erythroid leukemia, in relapse",cancer
+D45,Polycythemia vera,other
+D45,Polycythemia vera,other
+D45,Polycythemia vera,other
+C9420,Acute megakaryoblastic leukemia not having achieved remission,cancer
+C9421,"Acute megakaryoblastic leukemia, in remission",cancer
+C9422,"Acute megakaryoblastic leukemia, in relapse",cancer
+C9430,Mast cell leukemia not having achieved remission,cancer
+C9480,Other specified leukemias not having achieved remission,cancer
+C9431,"Mast cell leukemia, in remission",cancer
+C9481,"Other specified leukemias, in remission",cancer
+C9432,"Mast cell leukemia, in relapse",cancer
+C9482,"Other specified leukemias, in relapse",cancer
+C9500,Acute leukemia of unspecified cell type not having achieved remission,cancer
+C9501,"Acute leukemia of unspecified cell type, in remission",cancer
+C9502,"Acute leukemia of unspecified cell type, in relapse",cancer
+C9510,Chronic leukemia of unspecified cell type not having achieved remission,cancer
+C9511,"Chronic leukemia of unspecified cell type, in remission",cancer
+C9512,"Chronic leukemia of unspecified cell type, in relapse",cancer
+C9590,"Leukemia, unspecified not having achieved remission",cancer
+C9591,"Leukemia, unspecified, in remission",cancer
+C9592,"Leukemia, unspecified, in relapse",cancer
+C9590,"Leukemia, unspecified not having achieved remission",cancer
+C9591,"Leukemia, unspecified, in remission",cancer
+C9592,"Leukemia, unspecified, in relapse",cancer
+C9590,"Leukemia, unspecified not having achieved remission",cancer
+C9591,"Leukemia, unspecified, in remission",cancer
+C9592,"Leukemia, unspecified, in relapse",cancer
+Z856,Personal history of leukemia,cancer
+Z856,Personal history of leukemia,cancer
+Z856,Personal history of leukemia,cancer
+Z856,Personal history of leukemia,cancer
+Z856,Personal history of leukemia,cancer
+C9000,Multiple myeloma not having achieved remission,other
+C9001,Multiple myeloma in remission,other
+C9002,Multiple myeloma in relapse,other
+C888,Code not found,other
+C9020,Extramedullary plasmacytoma not having achieved remission,other
+C9030,Solitary plasmacytoma not having achieved remission,other
+C9021,Extramedullary plasmacytoma in remission,other
+C9031,Solitary plasmacytoma in remission,other
+C888,Code not found,other
+C9022,Extramedullary plasmacytoma in relapse,other
+C9032,Solitary plasmacytoma in relapse,other
+Z856,Personal history of leukemia,cancer
+Z856,Personal history of leukemia,cancer
+Z856,Personal history of leukemia,cancer
+Z856,Personal history of leukemia,cancer
+Z856,Personal history of leukemia,cancer
+C37,Malignant neoplasm of thymus,cancer
+C380,Malignant neoplasm of heart,cancer
+C381,Malignant neoplasm of anterior mediastinum,cancer
+C382,Malignant neoplasm of posterior mediastinum,cancer
+C388,"Malignant neoplasm of overlapping sites of heart, mediastinum and pleura",cancer
+C383,"Malignant neoplasm of mediastinum, part unspecified",cancer
+C460,Kaposi's sarcoma of skin,cancer
+C461,Kaposi's sarcoma of soft tissue,cancer
+C462,Kaposi's sarcoma of palate,cancer
+C464,Kaposi's sarcoma of gastrointestinal sites,cancer
+C4650,Kaposi's sarcoma of unspecified lung,cancer
+C463,Kaposi's sarcoma of lymph nodes,cancer
+C467,Kaposi's sarcoma of other sites,cancer
+C469,"Kaposi's sarcoma, unspecified",cancer
+C6940,Malignant neoplasm of unspecified ciliary body,cancer
+C6960,Malignant neoplasm of unspecified orbit,cancer
+C6950,Malignant neoplasm of unspecified lacrimal gland and duct,cancer
+C6900,Malignant neoplasm of unspecified conjunctiva,cancer
+C6910,Malignant neoplasm of unspecified cornea,cancer
+C6920,Malignant neoplasm of unspecified retina,cancer
+C6930,Malignant neoplasm of unspecified choroid,cancer
+C6950,Malignant neoplasm of unspecified lacrimal gland and duct,cancer
+C6980,Malignant neoplasm of overlapping sites of unspecified eye and adnexa,cancer
+C6990,Malignant neoplasm of unspecified site of unspecified eye,cancer
+C7490,Malignant neoplasm of unspecified part of unspecified adrenal gland,cancer
+C750,Malignant neoplasm of parathyroid gland,cancer
+C751,Malignant neoplasm of pituitary gland,cancer
+C752,Malignant neoplasm of craniopharyngeal duct,cancer
+C753,Malignant neoplasm of pineal gland,cancer
+C754,Malignant neoplasm of carotid body,cancer
+C755,Malignant neoplasm of aortic body and other paraganglia,cancer
+C758,"Malignant neoplasm with pluriglandular involvement, unspecified",cancer
+C759,"Malignant neoplasm of endocrine gland, unspecified",cancer
+C760,"Malignant neoplasm of head, face and neck",cancer
+C761,Malignant neoplasm of thorax,cancer
+C762,Malignant neoplasm of abdomen,cancer
+C763,Malignant neoplasm of pelvis,cancer
+C7640,Malignant neoplasm of unspecified upper limb,cancer
+C7650,Malignant neoplasm of unspecified lower limb,cancer
+C768,Malignant neoplasm of other specified ill-defined sites,cancer
+C96A,Histiocytic sarcoma,cancer
+C96A,Histiocytic sarcoma,cancer
+C96A,Histiocytic sarcoma,cancer
+C96A,Histiocytic sarcoma,cancer
+C96A,Histiocytic sarcoma,cancer
+C96A,Histiocytic sarcoma,cancer
+C96A,Histiocytic sarcoma,cancer
+C96A,Histiocytic sarcoma,cancer
+C96A,Histiocytic sarcoma,cancer
+C960,Multifocal and multisystemic (disseminated) Langerhans-cell histiocytosis,other
+C960,Multifocal and multisystemic (disseminated) Langerhans-cell histiocytosis,other
+C960,Multifocal and multisystemic (disseminated) Langerhans-cell histiocytosis,other
+C960,Multifocal and multisystemic (disseminated) Langerhans-cell histiocytosis,other
+C960,Multifocal and multisystemic (disseminated) Langerhans-cell histiocytosis,other
+C960,Multifocal and multisystemic (disseminated) Langerhans-cell histiocytosis,other
+C960,Multifocal and multisystemic (disseminated) Langerhans-cell histiocytosis,other
+C960,Multifocal and multisystemic (disseminated) Langerhans-cell histiocytosis,other
+C960,Multifocal and multisystemic (disseminated) Langerhans-cell histiocytosis,other
+C9620,"Malignant mast cell neoplasm, unspecified",cancer
+C9621,Aggressive systemic mastocytosis,other
+C9622,Mast cell sarcoma,cancer
+C9629,Other malignant mast cell neoplasm,cancer
+C9620,"Malignant mast cell neoplasm, unspecified",cancer
+C9621,Aggressive systemic mastocytosis,other
+C9622,Mast cell sarcoma,cancer
+C9629,Other malignant mast cell neoplasm,cancer
+C9620,"Malignant mast cell neoplasm, unspecified",cancer
+C9621,Aggressive systemic mastocytosis,other
+C9622,Mast cell sarcoma,cancer
+C9629,Other malignant mast cell neoplasm,cancer
+C9620,"Malignant mast cell neoplasm, unspecified",cancer
+C9621,Aggressive systemic mastocytosis,other
+C9622,Mast cell sarcoma,cancer
+C9629,Other malignant mast cell neoplasm,cancer
+C9620,"Malignant mast cell neoplasm, unspecified",cancer
+C9621,Aggressive systemic mastocytosis,other
+C9622,Mast cell sarcoma,cancer
+C9629,Other malignant mast cell neoplasm,cancer
+C9620,"Malignant mast cell neoplasm, unspecified",cancer
+C9621,Aggressive systemic mastocytosis,other
+C9622,Mast cell sarcoma,cancer
+C9629,Other malignant mast cell neoplasm,cancer
+C9620,"Malignant mast cell neoplasm, unspecified",cancer
+C9621,Aggressive systemic mastocytosis,other
+C9622,Mast cell sarcoma,cancer
+C9629,Other malignant mast cell neoplasm,cancer
+C9620,"Malignant mast cell neoplasm, unspecified",cancer
+C9621,Aggressive systemic mastocytosis,other
+C9622,Mast cell sarcoma,cancer
+C9629,Other malignant mast cell neoplasm,cancer
+C9620,"Malignant mast cell neoplasm, unspecified",cancer
+C9621,Aggressive systemic mastocytosis,other
+C9622,Mast cell sarcoma,cancer
+C9629,Other malignant mast cell neoplasm,cancer
+C7A091,Malignant carcinoid tumor of the thymus,cancer
+C7A094,"Malignant carcinoid tumor of the foregut, unspecified",cancer
+C7A095,"Malignant carcinoid tumor of the midgut, unspecified",cancer
+C7A096,"Malignant carcinoid tumor of the hindgut, unspecified",cancer
+D0920,Carcinoma in situ of unspecified eye,other
+D093,Carcinoma in situ of thyroid and other endocrine glands,other
+D098,Carcinoma in situ of other specified sites,other
+D099,"Carcinoma in situ, unspecified",other
+R87628,Other abnormal cytological findings on specimens from vagina,cancer
+R87620,Atypical squamous cells of undetermined significance on cytologic smear of vagina (ASC-US),cancer
+R87621,Atypical squamous cells cannot exclude high grade squamous intraepithelial lesion on cytologic smear of vagina (ASC-H),cancer
+R87622,Low grade squamous intraepithelial lesion on cytologic smear of vagina (LGSIL),cancer
+R87623,High grade squamous intraepithelial lesion on cytologic smear of vagina (HGSIL),cancer
+Z85238,Personal history of other malignant neoplasm of thymus,cancer
+Z8529,Personal history of malignant neoplasm of other respiratory and intrathoracic organs,cancer
+Z85830,Personal history of malignant neoplasm of bone,cancer
+Z85840,Personal history of malignant neoplasm of eye,cancer
+Z85858,Personal history of malignant neoplasm of other endocrine glands,cancer
+Z85831,Personal history of malignant neoplasm of soft tissue,cancer
+Z8589,Personal history of malignant neoplasm of other organs and systems,cancer
+Z859,"Personal history of malignant neoplasm, unspecified",cancer
+Z85020,Personal history of malignant carcinoid tumor of stomach,cancer
+Z85030,Personal history of malignant carcinoid tumor of large intestine,cancer
+Z85040,Personal history of malignant carcinoid tumor of rectum,cancer
+Z85060,Personal history of malignant carcinoid tumor of small intestine,cancer
+Z85110,Personal history of malignant carcinoid tumor of bronchus and lung,cancer
+Z85230,Personal history of malignant carcinoid tumor of thymus,cancer
+Z85520,Personal history of malignant carcinoid tumor of kidney,cancer
+Z85821,Personal history of Merkel cell carcinoma,other
+Z0389,Encounter for observation for other suspected diseases and conditions ruled out,other
+C770,"Secondary and unspecified malignant neoplasm of lymph nodes of head, face and neck",cancer
+C771,Secondary and unspecified malignant neoplasm of intrathoracic lymph nodes,cancer
+C772,Secondary and unspecified malignant neoplasm of intra-abdominal lymph nodes,cancer
+C773,Secondary and unspecified malignant neoplasm of axilla and upper limb lymph nodes,cancer
+C774,Secondary and unspecified malignant neoplasm of inguinal and lower limb lymph nodes,cancer
+C775,Secondary and unspecified malignant neoplasm of intrapelvic lymph nodes,cancer
+C778,Secondary and unspecified malignant neoplasm of lymph nodes of multiple regions,cancer
+C779,"Secondary and unspecified malignant neoplasm of lymph node, unspecified",cancer
+C7800,Secondary malignant neoplasm of unspecified lung,cancer
+C781,Secondary malignant neoplasm of mediastinum,cancer
+C782,Secondary malignant neoplasm of pleura,cancer
+C7839,Secondary malignant neoplasm of other respiratory organs,cancer
+C784,Secondary malignant neoplasm of small intestine,cancer
+C785,Secondary malignant neoplasm of large intestine and rectum,cancer
+C786,Secondary malignant neoplasm of retroperitoneum and peritoneum,cancer
+C787,Secondary malignant neoplasm of liver and intrahepatic bile duct,cancer
+C787,Secondary malignant neoplasm of liver and intrahepatic bile duct,cancer
+C7889,Secondary malignant neoplasm of other digestive organs,cancer
+C7900,Secondary malignant neoplasm of unspecified kidney and renal pelvis,cancer
+C7911,Secondary malignant neoplasm of bladder,cancer
+C7919,Secondary malignant neoplasm of other urinary organs,cancer
+C792,Secondary malignant neoplasm of skin,cancer
+C7931,Secondary malignant neoplasm of brain,cancer
+C7932,Secondary malignant neoplasm of cerebral meninges,cancer
+C7949,Secondary malignant neoplasm of other parts of nervous system,cancer
+C7951,Secondary malignant neoplasm of bone,cancer
+C7952,Secondary malignant neoplasm of bone marrow,cancer
+C7960,Secondary malignant neoplasm of unspecified ovary,cancer
+C7970,Secondary malignant neoplasm of unspecified adrenal gland,cancer
+C7981,Secondary malignant neoplasm of breast,cancer
+C7982,Secondary malignant neoplasm of genital organs,cancer
+C7989,Secondary malignant neoplasm of other specified sites,cancer
+C7B01,Secondary carcinoid tumors of distant lymph nodes,cancer
+C7B02,Secondary carcinoid tumors of liver,cancer
+C7B03,Secondary carcinoid tumors of bone,cancer
+C7B04,Secondary carcinoid tumors of peritoneum,cancer
+J910,Malignant pleural effusion,cancer
+R180,Malignant ascites,cancer
+C800,"Disseminated malignant neoplasm, unspecified",cancer
+C801,"Malignant (primary) neoplasm, unspecified",cancer
+C802,Malignant neoplasm associated with transplanted organ,cancer
+C7A00,Malignant carcinoid tumor of unspecified site,cancer
+C7A098,Malignant carcinoid tumors of other sites,cancer
+C7A1,Malignant poorly differentiated neuroendocrine tumors,cancer
+C7B00,"Secondary carcinoid tumors, unspecified site",cancer
+C7B1,Secondary Merkel cell carcinoma,other
+C7B09,Secondary carcinoid tumors of other sites,cancer
+C7B8,Other secondary neuroendocrine tumors,cancer
+D37030,Neoplasm of uncertain behavior of the parotid salivary glands,cancer
+D37031,Neoplasm of uncertain behavior of the sublingual salivary glands,cancer
+D37032,Neoplasm of uncertain behavior of the submandibular salivary glands,cancer
+D37039,"Neoplasm of uncertain behavior of the major salivary glands, unspecified",cancer
+D3701,Neoplasm of uncertain behavior of lip,cancer
+D3702,Neoplasm of uncertain behavior of tongue,cancer
+D3704,Neoplasm of uncertain behavior of the minor salivary glands,cancer
+D3705,Neoplasm of uncertain behavior of pharynx,cancer
+D371,Neoplasm of uncertain behavior of stomach,cancer
+D372,Neoplasm of uncertain behavior of small intestine,cancer
+D374,Neoplasm of uncertain behavior of colon,cancer
+D375,Neoplasm of uncertain behavior of rectum,cancer
+D376,"Neoplasm of uncertain behavior of liver, gallbladder and bile ducts",cancer
+D483,Neoplasm of uncertain behavior of retroperitoneum,cancer
+D484,Neoplasm of uncertain behavior of peritoneum,cancer
+D378,Neoplasm of uncertain behavior of other specified digestive organs,cancer
+D379,"Neoplasm of uncertain behavior of digestive organ, unspecified",cancer
+D380,Neoplasm of uncertain behavior of larynx,cancer
+D381,"Neoplasm of uncertain behavior of trachea, bronchus and lung",cancer
+D382,Neoplasm of uncertain behavior of pleura,cancer
+D383,Neoplasm of uncertain behavior of mediastinum,cancer
+D384,Neoplasm of uncertain behavior of thymus,cancer
+D385,Neoplasm of uncertain behavior of other respiratory organs,cancer
+D386,"Neoplasm of uncertain behavior of respiratory organ, unspecified",cancer
+D390,Neoplasm of uncertain behavior of uterus,cancer
+D392,Neoplasm of uncertain behavior of placenta,cancer
+D3910,Neoplasm of uncertain behavior of unspecified ovary,cancer
+D398,Neoplasm of uncertain behavior of other specified female genital organs,cancer
+D399,"Neoplasm of uncertain behavior of female genital organ, unspecified",cancer
+D4010,Neoplasm of uncertain behavior of unspecified testis,cancer
+D400,Neoplasm of uncertain behavior of prostate,cancer
+D408,Neoplasm of uncertain behavior of other specified male genital organs,cancer
+D409,"Neoplasm of uncertain behavior of male genital organ, unspecified",cancer
+D414,Neoplasm of uncertain behavior of bladder,cancer
+D419,Neoplasm of uncertain behavior of unspecified urinary organ,cancer
+D4100,Neoplasm of uncertain behavior of unspecified kidney,cancer
+D4120,Neoplasm of uncertain behavior of unspecified ureter,cancer
+D418,Neoplasm of uncertain behavior of other specified urinary organs,cancer
+D443,Neoplasm of uncertain behavior of pituitary gland,cancer
+D444,Neoplasm of uncertain behavior of craniopharyngeal duct,cancer
+D445,Neoplasm of uncertain behavior of pineal gland,cancer
+D4410,Neoplasm of uncertain behavior of unspecified adrenal gland,cancer
+D446,Neoplasm of uncertain behavior of carotid body,cancer
+D447,Neoplasm of uncertain behavior of aortic body and other paraganglia,cancer
+D440,Neoplasm of uncertain behavior of thyroid gland,cancer
+D442,Neoplasm of uncertain behavior of parathyroid gland,cancer
+D449,Neoplasm of uncertain behavior of unspecified endocrine gland,cancer
+D432,"Neoplasm of uncertain behavior of brain, unspecified",cancer
+D434,Neoplasm of uncertain behavior of spinal cord,cancer
+D420,Neoplasm of uncertain behavior of cerebral meninges,cancer
+D421,Neoplasm of uncertain behavior of spinal meninges,cancer
+D429,"Neoplasm of uncertain behavior of meninges, unspecified",cancer
+Q8500,"Neurofibromatosis, unspecified",other
+Q8501,"Neurofibromatosis, type 1",other
+Q8502,"Neurofibromatosis, type 2",other
+Q8503,Schwannomatosis,other
+Q8509,Other neurofibromatosis,other
+D433,Neoplasm of uncertain behavior of cranial nerves,cancer
+D438,Neoplasm of uncertain behavior of other specified parts of central nervous system,cancer
+D439,"Neoplasm of uncertain behavior of central nervous system, unspecified",cancer
+D480,Neoplasm of uncertain behavior of bone and articular cartilage,cancer
+D481,Code not found,other
+D485,Neoplasm of uncertain behavior of skin,cancer
+D4860,Neoplasm of uncertain behavior of unspecified breast,cancer
+D45,Polycythemia vera,other
+D4701,Cutaneous mastocytosis,other
+D4702,Systemic mastocytosis,other
+D4709,Other mast cell neoplasms of uncertain behavior,cancer
+D47Z9,"Other specified neoplasms of uncertain behavior of lymphoid, hematopoietic and related tissue",cancer
+D473,Essential (hemorrhagic) thrombocythemia,other
+D460,"Refractory anemia without ring sideroblasts, so stated",other
+D461,Refractory anemia with ring sideroblasts,other
+D4620,"Refractory anemia with excess of blasts, unspecified",other
+D4621,Refractory anemia with excess of blasts 1,other
+D46A,Refractory cytopenia with multilineage dysplasia,other
+D46B,Refractory cytopenia with multilineage dysplasia and ring sideroblasts,other
+D4622,Refractory anemia with excess of blasts 2,other
+D46C,Myelodysplastic syndrome with isolated del(5q) chromosomal abnormality,other
+D469,"Myelodysplastic syndrome, unspecified",other
+D471,Chronic myeloproliferative disease,other
+D47Z1,Post-transplant lymphoproliferative disorder (PTLD),other
+C9440,Acute panmyelosis with myelofibrosis not having achieved remission,other
+C9441,"Acute panmyelosis with myelofibrosis, in remission",other
+C9442,"Acute panmyelosis with myelofibrosis, in relapse",other
+D471,Chronic myeloproliferative disease,other
+D479,"Neoplasm of uncertain behavior of lymphoid, hematopoietic and related tissue, unspecified",cancer
+D47Z2,Castleman disease,other
+D47Z9,"Other specified neoplasms of uncertain behavior of lymphoid, hematopoietic and related tissue",cancer
+D487,Neoplasm of uncertain behavior of other specified sites,cancer
+D489,"Neoplasm of uncertain behavior, unspecified",cancer
+D490,Neoplasm of unspecified behavior of digestive system,cancer
+D491,Neoplasm of unspecified behavior of respiratory system,cancer
+D492,"Neoplasm of unspecified behavior of bone, soft tissue, and skin",cancer
+D493,Neoplasm of unspecified behavior of breast,cancer
+D494,Neoplasm of unspecified behavior of bladder,cancer
+D49511,Neoplasm of unspecified behavior of right kidney,cancer
+D49512,Neoplasm of unspecified behavior of left kidney,cancer
+D49519,Neoplasm of unspecified behavior of unspecified kidney,cancer
+D4959,Neoplasm of unspecified behavior of other genitourinary organ,cancer
+D496,Neoplasm of unspecified behavior of brain,cancer
+D497,Neoplasm of unspecified behavior of endocrine glands and other parts of nervous system,cancer
+D4981,Neoplasm of unspecified behavior of retina and choroid,cancer
+D4989,Neoplasm of unspecified behavior of other specified sites,cancer
+D499,Neoplasm of unspecified behavior of unspecified site,cancer
+Z510,Encounter for antineoplastic radiation therapy,other
+Z5111,Encounter for antineoplastic chemotherapy,other
+Z5112,Encounter for antineoplastic immunotherapy,other
+Z5189,Encounter for other specified aftercare,other
+Z5189,Encounter for other specified aftercare,other
+Z08,Encounter for follow-up examination after completed treatment for malignant neoplasm,cancer
+Z09,Encounter for follow-up examination after completed treatment for conditions other than malignant neoplasm,cancer
+Z08,Encounter for follow-up examination after completed treatment for malignant neoplasm,cancer
+Z09,Encounter for follow-up examination after completed treatment for conditions other than malignant neoplasm,cancer
