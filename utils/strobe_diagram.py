@@ -1,256 +1,254 @@
 import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
-from matplotlib.patches import FancyBboxPatch, FancyArrowPatch
+from matplotlib.patches import Ellipse, Rectangle, FancyArrowPatch
+import numpy as np
+import matplotlib.patheffects as path_effects
 
-def create_consort_diagram(steps, title="CONSORT Flow Diagram", subtitle=""):
+def create_nested_funnel_diagram(steps, title="", subtitle=""):
     """
-    Create a CONSORT flow diagram.
-
-    Parameters:
-    steps: list of dicts with keys:
-        - 'label': str, description of the step
-        - 'n': int, number in cohort
-        - 'excluded': dict (optional) with 'label' and 'n' for exclusions
-        - 'split': list of 2+ dicts (optional) for branching into multiple boxes
-        - 'color': str (optional), 'blue', 'red', or 'green'. Default 'blue'
+    Create a nested ellipse funnel diagram with labels on the left and stats inside ellipses.
     """
-    # Calculate total height needed - account for split boxes needing more space
-    total_height = 0
-    step_heights = []
-    for i, step in enumerate(steps):
-        if 'split' in step and len(step['split']) >= 2:
-            # Steps with splits need much more vertical space to prevent overlap
-            # More splits = more space needed
-            num_splits = len(step['split'])
-            base_height = 25.0  # Massively increased from 16.0 to accommodate very tall boxes
-            extra_height_per_split = 8.0  # Increased from 5.0 for more space per split
-            step_height = base_height + max(0, (num_splits - 2) * extra_height_per_split)
-            step_heights.append(step_height)
-            total_height += step_height
-        # Also check if NEXT step has splits - if so, give current step more space too
-        elif i < len(steps) - 1 and 'split' in steps[i + 1] and len(steps[i + 1]['split']) >= 2:
-            # Step before a split needs extra space for longer arrow
-            step_heights.append(8.0)  # Increased from 6.5 to show full arrow
-            total_height += 8.0
-        else:
-            step_heights.append(7.0)  # Increased from 5.5 to give more vertical space between boxes
-            total_height += 7.0
-
-    fig, ax = plt.subplots(figsize=(12, 16))  # Increased height from 10 to 16
-    ax.set_xlim(0, 12)
-    ax.set_ylim(0, total_height + 2)  # Reduced extra space for title
+    fig, ax = plt.subplots(figsize=(24, 16))
+    ax.set_xlim(0, 24)
+    ax.set_ylim(0, 16)
     ax.axis('off')
-
-    # Title - centered at x=6 (middle of 0-12)
-    ax.text(6, total_height + 1.7, title,
-            ha='center', va='top', fontsize=16, fontweight='bold')
-    if subtitle:
-        ax.text(6, total_height + 1.2, subtitle,
-                ha='center', va='top', fontsize=12)
-
-    # Calculate positions for all steps upfront using cumulative heights
-    step_positions = []
-    current_y = total_height
-    for i, step_height in enumerate(step_heights):
-        step_positions.append(current_y)
-        current_y -= step_height
-
-    for i, step in enumerate(steps):
-        # Get the pre-calculated y position for this step
-        step_y_pos = step_positions[i]
-
-        color_map = {
-            'blue': '#ADD8E6',
-            'green': '#90EE90',
-            'red': '#FFB6C1'
-        }
-        box_color = color_map.get(step.get('color', 'blue'), '#ADD8E6')
-        # edge_color is not needed for boundary-less boxes
-        # edge_color = {'blue': '#000080', 'green': '#006400', 'red': '#8B0000'}.get(
-        #     step.get('color', 'blue'), '#000080'
-        # )
-
-        # Main box - taller box if label has newlines or has a note
-        has_note = 'note' in step
-        # Count newlines in label to determine box height (increased for better padding)
-        newline_count = step['label'].count('\n')
-        if has_note:
-            # Calculate note lines for boxes with notes
-            note_lines = step['note'].count('\n') + 1
-            # Much taller boxes with generous spacing
-            box_height = max(5.0, 0.80 * (newline_count + 1) + 0.70 * note_lines + 2.5)
-        elif newline_count >= 2:
-            box_height = 4.5  # Increased from 4.0
-        elif newline_count == 1:
-            box_height = 4.0  # Increased from 3.4
+    
+    # Title
+    if title:
+        ax.text(12, 15.2, title, ha='center', va='top', 
+                fontsize=20, fontweight='bold')
+    
+    # Define VERY distinct colors
+    distinct_colors = [
+        '#D6EAF8',  # Very light blue
+        '#AED6F1',  # Light blue
+        '#85C1E2',  # Medium-light blue  
+        '#5DADE2',  # Medium blue
+        '#3498DB',  # Medium-dark blue
+        '#2E86C1',  # Dark blue
+        '#1F618D',  # Very dark blue
+    ]
+    
+    # Center X position
+    center_x = 11
+    
+    # Bottom Y position
+    bottom_y = 3
+    
+    # Main steps
+    main_steps = steps.copy()
+    num_main = len(main_steps)
+    
+    # Fixed proportional sizing
+    size_reduction = 0.78
+    ellipses_data = []
+    
+    for i, step in enumerate(main_steps):
+        scale = size_reduction ** i
+        width = 15 * scale
+        height = 10 * scale
+        color = distinct_colors[min(i, len(distinct_colors)-1)]
+        
+        center_y = bottom_y + height / 2
+        
+        ellipses_data.append({
+            'width': width,
+            'height': height,
+            'center_x': center_x,
+            'center_y': center_y,
+            'color': color,
+            'label': step['label'],
+            'n': step['n'],
+            'split': step.get('split', []),
+            'index': i
+        })
+    
+    # Draw ellipses from largest to smallest
+    for i in range(len(ellipses_data)):
+        data = ellipses_data[i]
+        zorder_value = i + 1
+        
+        ellipse = Ellipse((data['center_x'], data['center_y']), 
+                         data['width'], data['height'],
+                         facecolor=data['color'], 
+                         edgecolor='white',
+                         linewidth=4,
+                         zorder=zorder_value,
+                         alpha=1.0)
+        ax.add_patch(ellipse)
+    
+    # Add percentage and n INSIDE ellipses
+    total_n = main_steps[0]['n']
+    
+    for i, data in enumerate(ellipses_data):
+        percentage = (data['n'] / total_n) * 100
+        
+        # Determine text color
+        if i <= 2:
+            text_color = '#000000'
+        elif i == 3:
+            text_color = '#1a1a1a'
         else:
-            box_height = 2.2  # Increased from 2.0 for better padding
-        box = FancyBboxPatch(
-            (3, step_y_pos - box_height),
-            4, box_height,
-            boxstyle="round,pad=0.05",
-            edgecolor='none',        # <- No box boundary
-            facecolor=box_color,
-            linewidth=0              # <- No shared boundary
-        )
+            text_color = 'white'
+        
+        # Font size
+        if i >= 6:
+            font_size = 9
+        elif i >= 5:
+            font_size = 10
+        elif i >= 4:
+            font_size = 11
+        else:
+            font_size = 12
+        
+        # Simple text: percentage and n
+        stats_text = f"{percentage:.1f}%\nn={data['n']:,}"
+        
+        # BETTER FIX: Position text in the middle of the VISIBLE RING
+        # For each ring, find the midpoint between this ellipse top and next inner ellipse top
+        if i == len(ellipses_data) - 1:
+            # Innermost - just shift up a bit from center
+            text_y = data['center_y'] + data['height'] * 0.15
+        else:
+            # For rings: position between current top and next inner top
+            current_top = data['center_y'] + data['height'] / 2
+            next_inner_top = ellipses_data[i + 1]['center_y'] + ellipses_data[i + 1]['height'] / 2
+            # Position in middle of the ring space
+            text_y = (current_top + next_inner_top) / 2
+        
+        # Create text with outline effect
+        txt = ax.text(center_x, text_y, stats_text,
+                     ha='center', va='center', 
+                     fontsize=font_size, 
+                     fontweight='heavy',
+                     color=text_color, 
+                     zorder=100,
+                     linespacing=1.2)
+        
+        # Add white outline for dark text on light backgrounds
+        if i <= 3:
+            txt.set_path_effects([
+                path_effects.Stroke(linewidth=3, foreground='white'),
+                path_effects.Normal()
+            ])
+    
+    # Add descriptive labels on the LEFT side in boxes
+    label_box_x = 0.5
+    label_box_width = 4
+    label_box_height = 0.75
+    label_spacing = 0.5
+    
+    current_y = 13.5
+    
+    for i, data in enumerate(ellipses_data):
+        # Draw label box
+        box = Rectangle((label_box_x, current_y), label_box_width, label_box_height,
+                       facecolor='white', edgecolor='black', 
+                       linewidth=2)
         ax.add_patch(box)
-
-        # Text in box - adjust positioning for taller boxes with better padding
-        # Check if there's a note (non-bold text)
-        if 'note' in step:
-            # With note: label at top, note in middle, n at bottom
-            # Use proportional offsets based on box height for better spacing
-            box_center = step_y_pos - box_height/2
-            # Balance between spreading elements and keeping away from edges
-            label_offset = box_height * 0.27  # Position label in top third
-            n_offset = box_height * 0.27  # Position n in bottom third
-
-            ax.text(5, box_center + label_offset, step['label'],
-                    ha='center', va='center', fontsize=11, fontweight='bold')
-            ax.text(5, box_center, step['note'],
-                    ha='center', va='center', fontsize=9, fontweight='normal', style='italic',
-                    wrap=True)
-            ax.text(5, box_center - n_offset, f"n = {step['n']:,}",
-                    ha='center', va='center', fontsize=10)
-        else:
-            # No note: label at top, n at bottom - use proportional spacing based on box height
-            box_center = step_y_pos - box_height/2
-            # Use proportional offsets for taller boxes, minimum offset for smaller boxes
-            # Keep text well within box boundaries and spread out
-            label_offset = min(1.0, box_height * 0.30)
-            n_offset = min(1.0, box_height * 0.30)
-
-            ax.text(5, box_center + label_offset, step['label'],
-                    ha='center', va='center', fontsize=11, fontweight='bold')
-            ax.text(5, box_center - n_offset, f"n = {step['n']:,}",
-                    ha='center', va='center', fontsize=10)
-
-        # Split into multiple boxes (if exists) - positions them on the RIGHT side
-        if 'split' in step and len(step['split']) >= 2:
-            num_splits = len(step['split'])
-            split_boxes = []
-
-            # Calculate heights for all split boxes
-            for split_item in step['split']:
-                split_box_color = color_map.get(split_item.get('color', 'blue'), '#ADD8E6')
-                label_lines = split_item['label'].count('\n') + 1
-
-                if 'note' in split_item and split_item['note']:
-                    note_lines = split_item['note'].count('\n') + 1
-                    # Box height with compact spacing
-                    split_box_height = max(6.0, 1.0 * label_lines + 0.7 * note_lines + 3.5)
-                else:
-                    split_box_height = max(2.5, 0.70 * label_lines + 1.5)
-
-                split_boxes.append({
-                    'item': split_item,
-                    'height': split_box_height,
-                    'color': split_box_color
+        
+        # Label text
+        ax.text(label_box_x + label_box_width/2, current_y + label_box_height/2, 
+               data['label'],
+               ha='center', va='center', fontsize=10, 
+               fontweight='bold')
+        
+        # Connecting line
+        box_right_x = label_box_x + label_box_width
+        box_center_y = current_y + label_box_height/2
+        
+        a = data['width'] / 2
+        b = data['height'] / 2
+        ellipse_center_y = data['center_y']
+        
+        y_target = box_center_y - ellipse_center_y
+        y_target = np.clip(y_target, -b * 0.85, b * 0.85)
+        
+        x_offset_squared = a**2 * (1 - (y_target**2 / b**2))
+        x_offset = np.sqrt(max(0, x_offset_squared))
+        
+        ellipse_left_x = center_x - x_offset
+        ellipse_y = ellipse_center_y + y_target
+        
+        line = FancyArrowPatch(
+            (box_right_x + 0.1, box_center_y),
+            (ellipse_left_x, ellipse_y),
+            arrowstyle='-', 
+            linewidth=2, color='black', zorder=50
+        )
+        ax.add_patch(line)
+        
+        current_y -= (label_box_height + label_spacing)
+    
+    # Handle splits on the RIGHT side
+    all_splits = []
+    for idx, data in enumerate(ellipses_data):
+        if data['split']:
+            for split in data['split']:
+                all_splits.append({
+                    'split': split,
+                    'ellipse_data': data,
+                    'ellipse_index': idx
                 })
-
-            # Calculate total height needed and distribute boxes evenly
-            main_box_center_y = step_y_pos - box_height/2
-            total_split_height = sum(b['height'] for b in split_boxes)
-            gap_between_boxes = 3.5  # Massively increased from 2.5 for much more space between very tall boxes
-            total_gaps = gap_between_boxes * (num_splits - 1)
-
-            # Start from the top and work down
-            current_y = step_y_pos - 0.15
-
-            for idx, split_box_info in enumerate(split_boxes):
-                split_item = split_box_info['item']
-                split_box_height = split_box_info['height']
-                split_box_color = split_box_info['color']
-
-                # Calculate box position
-                box_top = current_y
-                box_bottom = box_top - split_box_height
-                box_center_y = (box_top + box_bottom) / 2
-
-                # Draw the split box
-                box = FancyBboxPatch(
-                    (7.5, box_bottom), 4.5, split_box_height,
-                    boxstyle="round,pad=0.05",
-                    edgecolor='none',
-                    facecolor=split_box_color,
-                    linewidth=0
-                )
-                ax.add_patch(box)
-
-                # Add text to split box
-                if 'note' in split_item and split_item['note']:
-                    # With note: stack elements from top with fixed spacing
-                    # All elements use 'top' alignment to stack downward from fixed positions
-
-                    note_lines = split_item['note'].count('\n') + 1
-
-                    # Position label at top (0.3 units from top edge)
-                    label_y = box_top - 0.3
-                    # Position note below label - calculate gap based on label lines to prevent overlap
-                    # Use full unit per line to ensure no overlap with bold font
-                    label_height_estimate = 1.0 * label_lines  # Full unit per line for bold labels
-                    note_y = label_y - label_height_estimate - 0.1  # Minimal gap after label
-                    # Position n at a fixed distance from bottom edge
-                    n_y = box_bottom + 0.2  # Minimal padding from bottom
-
-                    ax.text(9.75, label_y, split_item['label'],
-                            ha='center', va='top', fontsize=10, fontweight='bold')
-                    ax.text(9.75, note_y, split_item['note'],
-                            ha='center', va='top', fontsize=8, fontweight='normal', style='italic',
-                            wrap=True)
-                    ax.text(9.75, n_y, f"n = {split_item['n']:,}",
-                            ha='center', va='bottom', fontsize=9)
-                else:
-                    # Without note: just label and n
-                    ax.text(9.75, box_center_y + 0.6, split_item['label'],
-                            ha='center', va='center', fontsize=10, fontweight='bold')
-                    ax.text(9.75, box_center_y - 0.6, f"n = {split_item['n']:,}",
-                            ha='center', va='center', fontsize=9)
-
-                # Arrow from main box to this split box
-                arrow = FancyArrowPatch((7, main_box_center_y), (7.5, box_center_y),
-                                        arrowstyle='->', mutation_scale=15,
-                                        linewidth=2, color='black')
-                ax.add_patch(arrow)
-
-                # Move down for next box
-                current_y = box_bottom - gap_between_boxes
-
-        # Exclusion box (if exists) - supports single or multiple exclusions
-        elif 'excluded' in step:
-            # Check if it's a list of exclusions or a single exclusion
-            exclusions = step['excluded'] if isinstance(step['excluded'], list) else [step['excluded']]
-
-            for idx, exclusion in enumerate(exclusions):
-                exc_y = step_y_pos - box_height/2 - (idx * 1.2)  # Stack exclusions vertically
-
-                exc_box = FancyBboxPatch(
-                    (8, exc_y - 0.4), 2.5, 0.8,
-                    boxstyle="round,pad=0.05",
-                    edgecolor='none',          # <- No box boundary
-                    facecolor='#FFB6C1',
-                    linewidth=0
-                )
-                ax.add_patch(exc_box)
-
-                ax.text(9.25, exc_y, exclusion['label'],
-                        ha='center', va='center', fontsize=10, fontweight='bold')
-                ax.text(9.25, exc_y - 0.2, f"n = {exclusion['n']:,}",
-                        ha='center', va='center', fontsize=9)
-
-                # Arrow from main to exclusion
-                arrow = FancyArrowPatch((7, step_y_pos - box_height/2), (8, exc_y),
-                                       arrowstyle='->', mutation_scale=15,
-                                       linewidth=2, color='#8B0000')
-                ax.add_patch(arrow)
-
-        # Arrow to next step (draw for all steps except last)
-        if i < len(steps) - 1:
-            next_step_y_pos = step_positions[i + 1]
-            arrow = FancyArrowPatch((5, step_y_pos - box_height), (5, next_step_y_pos),
-                                   arrowstyle='->', mutation_scale=20,
-                                   linewidth=2.5, color='black')
+    
+    if all_splits:
+        header_x = 19
+        header_y = 14.5
+        header_width = 4.5
+        header_height = 0.9
+        
+        header = Rectangle((header_x, header_y), header_width, header_height,
+                          facecolor='white', edgecolor='black', linewidth=2.5)
+        ax.add_patch(header)
+        ax.text(header_x + header_width/2, header_y + header_height/2, 
+               'Data Source', ha='center', va='center', 
+               fontsize=15, fontweight='bold')
+        
+        box_x = header_x
+        box_width = header_width
+        box_height = 0.85
+        box_spacing = 0.5
+        current_y = 13.2
+        
+        for box_idx, item in enumerate(all_splits):
+            split_item = item['split']
+            ellipse_data = item['ellipse_data']
+            
+            split_color = split_item.get('color', 'white')
+            box_color = '#FFE6E6' if split_color == 'red' else 'white'
+            
+            box = Rectangle((box_x, current_y), box_width, box_height,
+                           facecolor=box_color, edgecolor='black', 
+                           linewidth=2)
+            ax.add_patch(box)
+            
+            ax.text(box_x + box_width/2, current_y + box_height/2, 
+                   split_item['label'],
+                   ha='center', va='center', fontsize=10, 
+                   fontweight='bold')
+            
+            a = ellipse_data['width'] / 2
+            b = ellipse_data['height'] / 2
+            ellipse_center_y = ellipse_data['center_y']
+            
+            box_center_y = current_y + box_height/2
+            y_target = box_center_y - ellipse_center_y
+            y_target = np.clip(y_target, -b * 0.85, b * 0.85)
+            
+            x_offset_squared = a**2 * (1 - (y_target**2 / b**2))
+            x_offset = np.sqrt(max(0, x_offset_squared))
+            
+            arrow_start_x = center_x + x_offset
+            arrow_start_y = ellipse_center_y + y_target
+            
+            arrow = FancyArrowPatch(
+                (arrow_start_x, arrow_start_y),
+                (box_x - 0.1, box_center_y),
+                arrowstyle='->', mutation_scale=22,
+                linewidth=2, color='black', zorder=50
+            )
             ax.add_patch(arrow)
-
+            
+            current_y -= (box_height + box_spacing)
+    
     plt.tight_layout()
     return fig
