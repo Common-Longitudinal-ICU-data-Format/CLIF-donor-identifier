@@ -1,6 +1,6 @@
 # CLIF Epidemiology of Potential and Actual Deceased Organ Donors
 
-## Project Version
+## CLIF Version
 2.1.0
 
 ## Objective
