@@ -1,4 +1,4 @@
-# CLIF Epidemiology of Potential and Actual Deceased Organ Donors
+# Identifying medically eligible deceased organ donors in federated intensive care datasets
 
 ## CLIF Version
 2.1.0
