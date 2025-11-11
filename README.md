@@ -96,72 +96,18 @@ All results are saved to `output/final/` with accompanying console output showin
 
 The following tables are required with specified columns:
 
-### 1. **patient**
-- `patient_id` - unique patient identifier
-- `death_dttm` - date/time of patient death
-- `birth_date` - patient date of birth (for age calculation)
-- `race_category` - patient race category
-- `ethnicity_category` - patient ethnicity category
-- `sex_category` - patient biological sex
-
-### 2. **hospitalization**
-- `patient_id` - links to patient table
-- `hospitalization_id` - unique hospitalization identifier
-- `admission_dttm` - hospital admission date/time
-- `discharge_dttm` - hospital discharge date/time
-- `age_at_admission` - age of patient at admission
-- `discharge_category` - discharge disposition (must include 'expired' for decedents)
-- `admission_type_category` - type of admission (emergency, planned, etc.)
-
-### 3. **adt** (Admission-Discharge-Transfer)
-- `hospitalization_id` - links to hospitalization table
-- `in_dttm` - date/time of location entry
-- `out_dttm` - date/time of location exit
-- `location_category` - clinical location (ed, ward, stepdown, icu)
-- `location_name` - descriptive location name
-
-### 4. **vitals**
-- `hospitalization_id` - links to hospitalization table
-- `recorded_dttm` - date/time of vital sign recording
-- `vital_category` - type of vital sign
-  - Required: `weight_kg`, `height_cm` (for BMI calculation)
-- `vital_value` - numeric vital sign value
-
-### 5. **labs**
-- `hospitalization_id` - links to hospitalization table
-- `lab_collect_dttm` - date/time of lab specimen collection
-- `lab_category` - type of laboratory test
-  - Required for organ assessment: `creatinine`, `bilirubin_total`, `ast`, `alt`
-- `lab_value_numeric` - numeric lab result value
-
-### 6. **respiratory_support**
-- `hospitalization_id` - links to hospitalization table
-- `recorded_dttm` - date/time of respiratory support record
-- `device_category` - type of respiratory device
-  - Required: `imv` (invasive mechanical ventilation)
-
-### 7. **crrt_therapy** (Continuous Renal Replacement Therapy)
-- `hospitalization_id` - links to hospitalization table
-- `recorded_dttm` - date/time of CRRT record
-
-### 8. **hospital_diagnosis**
-- `hospitalization_id` - links to hospitalization table
-- `diagnosis_code` - ICD-10-CM diagnosis code
-- `diagnosis_code_format` - format indicator (icd10, icd10cm)
-
-### 9. **microbiology_culture**
-- `hospitalization_id` - links to hospitalization table
-- `fluid_category` - type of specimen (blood_buffy)
-- `method_category` - test method (culture)
-- `collect_dttm` - date/time of specimen collection
-- `organism_category` - identified organism or 'no_growth'
-
-### 10. **patient_assessments**
-- `hospitalization_id` - links to hospitalization table
-- `assessment_category` - type of assessment
-  - Required: `gcs_total`, `rass`
-- `recorded_dttm` - date/time of assessment
-- `numerical_value` - numeric assessment score
+| Table Name              | Variables (with required categories/values)                   |
+|-------------------------|--------------------------------------------------------------|
+| **patient**             | `patient_id`, `death_dttm`, `birth_date`, `race_category`, `ethnicity_category`, `sex_category` |
+| **hospitalization**     | `patient_id`, `hospitalization_id`, `admission_dttm`, `discharge_dttm`, `age_at_admission`, `discharge_category` (must include 'expired'), `admission_type_category` (emergency, planned, etc.) |
+| **adt**                 | `hospitalization_id`, `in_dttm`, `out_dttm`, `location_category` (ed, ward, stepdown, icu), `location_name` |
+| **vitals**              | `hospitalization_id`, `recorded_dttm`, `vital_category` (weight_kg, height_cm required), `vital_value` |
+| **labs**                | `hospitalization_id`, `lab_collect_dttm`, `lab_category` (creatinine, bilirubin_total, ast, alt required), `lab_value_numeric` |
+| **respiratory_support** | `hospitalization_id`, `recorded_dttm`, `device_category` (imv required) |
+| **crrt_therapy**        | `hospitalization_id`, `recorded_dttm`                        |
+| **hospital_diagnosis**  | `hospitalization_id`, `diagnosis_code`, `diagnosis_code_format` (icd10, icd10cm) |
+| **microbiology_culture**| `hospitalization_id`, `fluid_category` (blood_buffy), `method_category` (culture), `collect_dttm`, `organism_category` ('no_growth' or identified organism) |
+| **patient_assessments** | `hospitalization_id`, `assessment_category` (gcs_total, rass required), `recorded_dttm`, `numerical_value` |
 
 
 

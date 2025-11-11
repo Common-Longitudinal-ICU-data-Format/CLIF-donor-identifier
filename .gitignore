@@ -11,3 +11,4 @@ __pycache__
 config_mimic.json
 config_ucmc.json
 icd10orderfiles/
+output_ucmc/
