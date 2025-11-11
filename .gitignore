@@ -8,4 +8,6 @@ __pycache__
 
 .venv
 .serena
+config_mimic.json
+config_ucmc.json
 icd10orderfiles/
