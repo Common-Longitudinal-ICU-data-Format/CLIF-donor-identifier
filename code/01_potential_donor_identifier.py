@@ -162,6 +162,61 @@ final_df = final_df.join(
     patient_df.select(demog_cols), on='patient_id', how='left'
 )
 
+# Document patients with multiple death hospitalizations
+print("\n" + "="*80)
+print("DEATH HOSPITALIZATION ANALYSIS")
+print("="*80)
+
+# Check for patients with multiple death hospitalizations
+death_encounters_per_patient = (
+    final_df
+    .group_by('patient_id')
+    .agg([
+        pl.count().alias('death_encounter_count'),
+        pl.col('encounter_block').alias('encounter_blocks'),
+        pl.col('discharge_dttm').alias('discharge_times')
+    ])
+    .sort('death_encounter_count', descending=True)
+)
+
+# Calculate statistics
+total_death_encounters = len(final_df)
+unique_patients = final_df['patient_id'].n_unique()
+multi_death_patients = death_encounters_per_patient.filter(pl.col('death_encounter_count') > 1)
+num_multi_death = len(multi_death_patients)
+
+print(f"Total death hospitalizations found: {total_death_encounters:,}")
+print(f"Unique patients who died: {unique_patients:,}")
+print(f"Patients with multiple death hospitalizations: {num_multi_death:,}")
+
+if num_multi_death > 0:
+    print("\nDEBUG: Patients with multiple death hospitalizations (showing first 5):")
+    sample = multi_death_patients.head(5)
+    for row in sample.iter_rows(named=True):
+        print(f"  Patient {row['patient_id']}: {row['death_encounter_count']} death hospitalizations")
+        print(f"    Encounter blocks: {row['encounter_blocks']}")
+        print(f"    Discharge times: {row['discharge_times']}")
+
+    print(f"\nWARNING: Found {num_multi_death} patients with multiple death hospitalizations!")
+    print("This likely indicates a data quality issue or patients who were resuscitated.")
+
+    # Keep only the LAST death hospitalization (most recent discharge_dttm) for each patient
+    print("\nDeduplicating: keeping only the LAST death hospitalization per patient...")
+    final_df = (
+        final_df
+        .sort(['patient_id', 'discharge_dttm'])
+        .group_by('patient_id')
+        .last()  # Keep the last (most recent) death
+    )
+
+    # Verify deduplication
+    assert final_df['patient_id'].n_unique() == len(final_df), "Deduplication failed - duplicate patient_ids remain"
+    print(f"After deduplication: {len(final_df):,} unique patients with their final death hospitalization")
+else:
+    print("✓ No patients with multiple death hospitalizations found - data is clean")
+
+print("="*80 + "\n")
+
 decedents_df_n = final_df["patient_id"].n_unique()
 strobe_counts["1_decedents_df_n"] = decedents_df_n
 strobe_counts

@@ -88,12 +88,14 @@ def create_table_one(final_cohort_df: pl.DataFrame, output_dir: str = 'output') 
         'CLIF_Donors': cohort_clif['patient_id'].n_unique()
     })
 
+    # After patient-level deduplication, encounters should equal patients
+    # but we include this for verification
     summary_data.append({
         'Variable': 'Unique Encounters',
         'Category': '',
-        'Overall': cohort_overall['encounter_block'].n_unique(),
-        'CALC_Donors': cohort_calc['encounter_block'].n_unique(),
-        'CLIF_Donors': cohort_clif['encounter_block'].n_unique()
+        'Overall': len(cohort_overall),  # Should equal unique patients after deduplication
+        'CALC_Donors': len(cohort_calc),
+        'CLIF_Donors': len(cohort_clif)
     })
 
     # Data collection period (min-max years from admission_dttm)
