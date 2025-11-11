@@ -117,6 +117,9 @@ def create_table_one(final_cohort_df: pl.DataFrame, output_dir: str = 'output') 
         else:
             year_ranges[cohort_name] = "N/A"
 
+    # Debug print to see what we calculated
+    print(f"Data Collection Period - Year ranges calculated: {year_ranges}")
+
     summary_data.append({
         'Variable': 'Data Collection Period',
         'Category': '',
@@ -124,6 +127,9 @@ def create_table_one(final_cohort_df: pl.DataFrame, output_dir: str = 'output') 
         'CALC_Donors': year_ranges.get('CALC Donors', 'N/A'),
         'CLIF_Donors': year_ranges.get('CLIF Donors', 'N/A')
     })
+
+    # Debug print to verify it was added
+    print(f"Data Collection Period row added to summary_data")
 
     # ============================================
     # Categorical variables
@@ -186,6 +192,10 @@ def create_table_one(final_cohort_df: pl.DataFrame, output_dir: str = 'output') 
 
     # Convert to pandas for export and printing
     table_one_pd = table_one_df.to_pandas()
+
+    # Debug: Check if Data Collection Period is in the dataframe
+    data_collection_rows = table_one_df.filter(pl.col('Variable') == 'Data Collection Period')
+    print(f"Data Collection Period rows in DataFrame: {data_collection_rows}")
 
     # Save to CSV
     csv_path = output_path / 'table_one.csv'
