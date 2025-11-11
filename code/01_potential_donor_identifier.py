@@ -113,8 +113,6 @@ adt_stitched = adt_stitched.with_columns(
 )
 
 # Filter hosp_stitched to only hospitalizations that are present in the adt_stitched table
-# assuming 'hospitalization_id' is the matching key
-# (if there are multiple relevant keys, adjust accordingly)
 if "hospitalization_id" in hosp_stitched.columns and "hospitalization_id" in adt_stitched.columns:
     hosp_stitched = (
         hosp_stitched.filter(
@@ -991,8 +989,8 @@ micro_culture = read_data(
 
 # Filter to blood cultures
 micro_culture_filtered = micro_culture.filter(
-    (pl.col("fluid_category") == "blood_buffy") &
-    (pl.col("method_category") == "culture")
+    (pl.col("fluid_category").str.to_lowercase() == "blood_buffy") &
+    (pl.col("method_category").str.to_lowercase() == "culture")
 )
 
 # Join with final_cohort_df to get death time
