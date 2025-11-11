@@ -297,9 +297,12 @@ def create_strobe_diagrams_for_cohorts(
     calc_stages = []
     calc_csv_data = []
 
+    # Note: final_cohort_df is patient-level (one row per patient)
+    # so len() correctly counts unique patients
+
     # Stage 1: All inpatient hospital deaths
     df_stage1 = final_cohort_df
-    n_stage1 = len(df_stage1)
+    n_stage1 = len(df_stage1)  # Count of unique patients
     calc_stages.append({
         'label': 'All inpatient hospital deaths',
         'n': n_stage1,
@@ -415,9 +418,12 @@ def create_strobe_diagrams_for_cohorts(
     clif_stages = []
     clif_csv_data = []
 
+    # Note: final_cohort_df is patient-level (one row per patient)
+    # so len() correctly counts unique patients
+
     # Stage 1: All inpatient hospital deaths
     df_stage1 = final_cohort_df
-    n_stage1 = len(df_stage1)
+    n_stage1 = len(df_stage1)  # Count of unique patients
     clif_stages.append({
         'label': 'All inpatient hospital deaths\n(ED, Ward, Stepdown, ICU)',
         'n': n_stage1,

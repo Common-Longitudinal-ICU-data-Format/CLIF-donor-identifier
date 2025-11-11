@@ -45,7 +45,10 @@ def calculate_cohort_stages(df, definition='calc'):
     --------
     list : List of dictionaries with stage information
     """
-    
+
+    # Note: After patient-level deduplication, df has one row per patient
+    # so len() correctly counts unique patients
+
     if definition.lower() == 'calc':
         # Definition 1: CALC
         stages = []
