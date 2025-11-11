@@ -8,6 +8,7 @@ dependencies = [
     "matplotlib>=3.7.0",
     "pyarrow>=12.0.0",
     "jupyter>=1.0.0",
+    "matplotlib-venn>=1.1.2",
 ]
 
 [build-system]
