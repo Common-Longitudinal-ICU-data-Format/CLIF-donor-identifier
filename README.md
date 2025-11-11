@@ -5,7 +5,7 @@
 
 ## Objective
 
-This project identifies potential deceased organ donors from inpatient hospital deaths using two evidence-based criteria definitions: **CALC** (Cause, Age, Location-consistent) and **CLIF** (Critical Illness Outcomes Research Network). The code produces cohort selection diagrams, and baseline characteristics tables.
+This project identifies potential deceased organ donors from inpatient hospital deaths using two evidence-based criteria definitions: **CALC** (Cause, Age, Location-consistent) and **CLIF**. The code produces cohort selection diagrams, and baseline characteristics tables.
 
 ## Cohort Identification
 
