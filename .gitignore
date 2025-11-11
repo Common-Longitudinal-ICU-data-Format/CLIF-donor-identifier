@@ -12,3 +12,4 @@ config_mimic.json
 config_ucmc.json
 icd10orderfiles/
 output_ucmc/
+notebook_to_script.py
