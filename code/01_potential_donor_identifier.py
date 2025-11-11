@@ -28,15 +28,6 @@ from utils.strobe_diagram import create_consort_diagram
 from clifpy.utils.stitching_encounters import stitch_encounters
 from utils.outlier_handler import apply_outlier_handling
 import gc
-from pathlib import Path
-
-# Path resolution - make paths work regardless of execution directory
-SCRIPT_DIR = Path(__file__).parent
-PROJECT_ROOT = SCRIPT_DIR.parent
-UTILS_DIR = PROJECT_ROOT / "utils"
-OUTPUT_DIR = PROJECT_ROOT / "output"
-OUTPUT_FINAL_DIR = OUTPUT_DIR / "final"
-OUTPUT_INTERMEDIATE_DIR = OUTPUT_DIR / "intermediate"
 
 site_name = config['site_name']
 tables_path = config['tables_path']
@@ -46,6 +37,12 @@ sys.path.insert(0, project_root)
 print(f"Site Name: {site_name}")
 print(f"Tables Path: {tables_path}")
 print(f"File Type: {file_type}")
+from pathlib import Path
+PROJECT_ROOT = Path(config['project_root'])
+UTILS_DIR = PROJECT_ROOT / "utils"
+OUTPUT_DIR = PROJECT_ROOT / "output"
+OUTPUT_FINAL_DIR = OUTPUT_DIR / "final"
+OUTPUT_INTERMEDIATE_DIR = OUTPUT_DIR / "intermediate"
 
 strobe_counts = {}
 
@@ -131,8 +128,6 @@ encounter_mapping = encounter_mapping.with_columns(
 )
 
 gc.collect()
-
-# Step 1: Get the admission dates for expired and hospice discharges
 
 # Identify expired encounters
 decedents_df = hosp_stitched.filter(
@@ -1067,8 +1062,6 @@ final_cohort_df = final_cohort_df.with_columns([
 clif_eligible_n = final_cohort_df.filter(pl.col('clif_eligible_donors'))['patient_id'].n_unique()
 strobe_counts["clif_eligible_donors"] = clif_eligible_n
 
-final_cohort_df.columns
-
 ################################################################################
 # Patient assessments
 ################################################################################
@@ -1151,8 +1144,6 @@ table_one = create_table_one(final_cohort_df, output_dir=str(OUTPUT_FINAL_DIR))
 ################################################################################
 
 strobe_counts
-
-final_cohort_df.columns
 
 from utils.cohort_visualizations import create_all_visualizations
 summary_df = create_all_visualizations(final_cohort_df, output_dir=str(OUTPUT_FINAL_DIR))

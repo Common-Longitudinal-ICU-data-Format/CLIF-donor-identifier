@@ -80,9 +80,9 @@ Update `config/config.json` with paths to your CLIF data files:
 uv sync
 ```
 
-### 3. Run the Analysis
+### 3. Run the Analysis 
 
-Open and execute `code/01_potential_donor_identifier.ipynb` in Jupyter.
+Open and execute `code/01_potential_donor_identifier.ipynb` in Jupyter. or run `uv run code/01_potential_donor_identifier.py`
 
 
 ### 4. Review Outputs
