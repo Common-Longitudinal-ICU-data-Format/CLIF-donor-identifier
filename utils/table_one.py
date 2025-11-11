@@ -96,6 +96,35 @@ def create_table_one(final_cohort_df: pl.DataFrame, output_dir: str = 'output') 
         'CLIF_Donors': cohort_clif['encounter_block'].n_unique()
     })
 
+    # Data collection period (min-max years from admission_dttm)
+    year_ranges = {}
+    for cohort_name, cohort_df in cohorts.items():
+        if 'admission_dttm' in cohort_df.columns:
+            # Get min and max years from admission datetime
+            admission_years = cohort_df.select(
+                pl.col('admission_dttm').dt.year()
+            ).to_series().drop_nulls()
+
+            if len(admission_years) > 0:
+                min_year = int(admission_years.min())
+                max_year = int(admission_years.max())
+                if min_year == max_year:
+                    year_ranges[cohort_name] = str(min_year)
+                else:
+                    year_ranges[cohort_name] = f"{min_year} - {max_year}"
+            else:
+                year_ranges[cohort_name] = "N/A"
+        else:
+            year_ranges[cohort_name] = "N/A"
+
+    summary_data.append({
+        'Variable': 'Data Collection Period',
+        'Category': '',
+        'Overall': year_ranges.get('Overall', 'N/A'),
+        'CALC_Donors': year_ranges.get('CALC Donors', 'N/A'),
+        'CLIF_Donors': year_ranges.get('CLIF Donors', 'N/A')
+    })
+
     # ============================================
     # Categorical variables
     # ============================================
@@ -207,6 +236,11 @@ def create_table_one(final_cohort_df: pl.DataFrame, output_dir: str = 'output') 
             }}
             tr:hover {{
                 background-color: #f0f0f0;
+            }}
+            /* Highlight summary rows */
+            tr:nth-child(2), tr:nth-child(3), tr:nth-child(4) {{
+                background-color: #e8f2ff;
+                font-weight: bold;
             }}
         </style>
     </head>

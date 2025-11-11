@@ -387,8 +387,7 @@ def create_strobe_diagrams_for_cohorts(
 
     # Create CALC STROBE diagram
     calc_title = "CALC Definition - Potential Organ Donors"
-    calc_subtitle = "Progressive Filtering for Medical Eligibility"
-    calc_fig = create_consort_diagram(calc_stages, title=calc_title, subtitle=calc_subtitle)
+    calc_fig = create_consort_diagram(calc_stages, title=calc_title)
 
     if save_figures:
         calc_figure_path = output_path / 'strobe_calc_definition.png'
@@ -564,8 +563,7 @@ def create_strobe_diagrams_for_cohorts(
 
     # Create CLIF STROBE diagram
     clif_title = "CLIF Definition - Eligible Deceased Organ Donors"
-    clif_subtitle = "Progressive Filtering with Organ Quality Assessment"
-    clif_fig = create_consort_diagram(clif_stages, title=clif_title, subtitle=clif_subtitle)
+    clif_fig = create_consort_diagram(clif_stages, title=clif_title)
 
     if save_figures:
         clif_figure_path = output_path / 'strobe_clif_definition.png'
