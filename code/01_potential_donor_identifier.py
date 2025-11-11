@@ -21,7 +21,6 @@ import os
 import polars as pl 
 import matplotlib.pyplot as plt
 import pandas as pd
-
 from utils.config import config
 from utils.io import read_data
 from utils.strobe_diagram import create_consort_diagram
@@ -272,9 +271,22 @@ vitals_first_last = vitals_first_last.with_columns(
 final_df = final_df.join(vitals_first_last, on='hospitalization_id', how='left')
 
 # Define final_death_dttm as death_dttm, if missing then last_recorded_vital_dttm
+# If death_dttm is after discharge_dttm, update death_dttm to discharge_dttm
 final_df = final_df.with_columns(
-    pl.when(pl.col("death_dttm").is_not_null())
-      .then(pl.col("death_dttm"))
+    pl.when(
+        (pl.col("death_dttm").is_not_null()) &
+        (pl.col("discharge_dttm").is_not_null()) &
+        (pl.col("death_dttm") > pl.col("discharge_dttm"))
+    )
+    .then(pl.col("discharge_dttm"))
+    .otherwise(pl.col("death_dttm"))
+    .alias("adjusted_death_dttm")
+)
+
+# Now define final_death_dttm as adjusted_death_dttm if present, else last_recorded_vital_dttm
+final_df = final_df.with_columns(
+    pl.when(pl.col("adjusted_death_dttm").is_not_null())
+      .then(pl.col("adjusted_death_dttm"))
       .otherwise(pl.col("last_recorded_vital_dttm"))
       .alias("final_death_dttm")
 )
@@ -511,8 +523,6 @@ strobe_counts["5_age_relevant_in_hospital_dx"] = n_age_relevant_in_hospital_dx
 
 strobe_counts
 
-import polars as pl
-
 # ---- 0) Load contraindications list from CSV ----
 contraindications_df = pl.read_csv(str(UTILS_DIR / "icd10_contraindications.csv"))
 contraindication_codes = (
@@ -686,7 +696,7 @@ resp_expired_imv_hrs = resp_expired_latest_recorded_imv.with_columns(
 
 # Filter to patients who were on IMV at death or before 48hrs of death 
 resp_expired_cohort = resp_expired_imv_hrs.filter(
-    (pl.col('hr_2death_last_imv') >= 0) & 
+    (pl.col('hr_2death_last_imv') >= -24) & 
     (pl.col('hr_2death_last_imv') <= 48)
 )
 
@@ -844,13 +854,6 @@ print(f"  Patients with bilirubin: {organ_labs.filter(pl.col('bilirubin_total_va
 print(f"  Patients with AST: {organ_labs.filter(pl.col('ast_value').is_not_null())['patient_id'].n_unique()}")
 print(f"  Patients with ALT: {organ_labs.filter(pl.col('alt_value').is_not_null())['patient_id'].n_unique()}")
 
-"""
-<!-- Organ labs summary:
-  Patients with creatinine: 6188
-  Patients with bilirubin: 5960
-  Patients with AST: 5912
-  Patients with ALT: 5948 -->
-"""
 
 # ============================================
 # Check for CRRT within 48 hours before death
@@ -1183,6 +1186,55 @@ final_cohort_df = final_cohort_df.join(
     on='hospitalization_id',
     how='left'
 )
+
+# ================================================================================
+# ENSURE PATIENT-LEVEL ANALYSIS
+# ================================================================================
+print("\n" + "="*80)
+print("FINALIZING PATIENT-LEVEL COHORT")
+print("="*80)
+
+# Step 1: First, remove encounter-level identifiers
+print("Step 1: Removing encounter-level identifiers (hospitalization_id, encounter_block)...")
+columns_to_drop = []
+if 'hospitalization_id' in final_cohort_df.columns:
+    columns_to_drop.append('hospitalization_id')
+if 'encounter_block' in final_cohort_df.columns:
+    columns_to_drop.append('encounter_block')
+
+if columns_to_drop:
+    final_cohort_df = final_cohort_df.drop(columns_to_drop)
+    print(f"✓ Dropped: {', '.join(columns_to_drop)}")
+else:
+    print("✓ No encounter-level identifiers found to drop")
+
+# Step 2: Now deduplicate to ensure one row per patient
+print("\nStep 2: Ensuring one row per patient...")
+n_patients_before = final_cohort_df['patient_id'].n_unique()
+n_rows_before = len(final_cohort_df)
+
+if n_patients_before != n_rows_before:
+    print(f"WARNING: {n_rows_before:,} rows but only {n_patients_before:,} unique patients!")
+    print("Deduplicating to ensure one row per patient...")
+
+    # Deduplicate keeping the last entry per patient (most recent data)
+    final_cohort_df = final_cohort_df.unique(subset=['patient_id'], keep='last')
+
+    n_rows_after = len(final_cohort_df)
+    print(f"✓ Deduplicated: {n_rows_before:,} rows → {n_rows_after:,} rows")
+    print(f"Removed {n_rows_before - n_rows_after:,} duplicate rows")
+else:
+    print(f"✓ Already unique: {n_patients_before:,} patients = {n_rows_before:,} rows")
+
+# Step 3: Final verification
+n_patients_final = final_cohort_df['patient_id'].n_unique()
+n_rows_final = len(final_cohort_df)
+assert n_patients_final == n_rows_final, \
+    f"CRITICAL: Still have duplicates! {n_rows_final} rows but {n_patients_final} unique patients"
+
+print(f"\n✓ Final verification passed: {n_patients_final:,} unique patients")
+print(f"Final cohort shape: {final_cohort_df.shape}")
+print("="*80 + "\n")
 
 final_cohort_df.write_parquet(str(OUTPUT_INTERMEDIATE_DIR / "final_cohort_df.parquet"))
 pd.DataFrame([strobe_counts]).to_csv(str(OUTPUT_FINAL_DIR / "strobe_counts.csv"), index=False)
