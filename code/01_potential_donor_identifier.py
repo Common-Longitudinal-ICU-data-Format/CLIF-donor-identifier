@@ -28,6 +28,15 @@ from utils.strobe_diagram import create_consort_diagram
 from clifpy.utils.stitching_encounters import stitch_encounters
 from utils.outlier_handler import apply_outlier_handling
 import gc
+from pathlib import Path
+
+# Path resolution - make paths work regardless of execution directory
+SCRIPT_DIR = Path(__file__).parent
+PROJECT_ROOT = SCRIPT_DIR.parent
+UTILS_DIR = PROJECT_ROOT / "utils"
+OUTPUT_DIR = PROJECT_ROOT / "output"
+OUTPUT_FINAL_DIR = OUTPUT_DIR / "final"
+OUTPUT_INTERMEDIATE_DIR = OUTPUT_DIR / "intermediate"
 
 site_name = config['site_name']
 tables_path = config['tables_path']
@@ -455,7 +464,7 @@ strobe_counts
 import polars as pl
 
 # ---- 0) Load contraindications list from CSV ----
-contraindications_df = pl.read_csv("../utils/icd10_contraindications.csv")
+contraindications_df = pl.read_csv(str(UTILS_DIR / "icd10_contraindications.csv"))
 contraindication_codes = (
     contraindications_df
     .with_columns([
@@ -1127,15 +1136,15 @@ final_cohort_df = final_cohort_df.join(
     how='left'
 )
 
-final_cohort_df.write_parquet("../output/intermediate/final_cohort_df.parquet")
-pd.DataFrame([strobe_counts]).to_csv("../output/final/strobe_counts.csv", index=False)
+final_cohort_df.write_parquet(str(OUTPUT_INTERMEDIATE_DIR / "final_cohort_df.parquet"))
+pd.DataFrame([strobe_counts]).to_csv(str(OUTPUT_FINAL_DIR / "strobe_counts.csv"), index=False)
 
 ################################################################################
 # Table One
 ################################################################################
 
 from utils.table_one import create_table_one
-table_one = create_table_one(final_cohort_df, output_dir='../output/final')
+table_one = create_table_one(final_cohort_df, output_dir=str(OUTPUT_FINAL_DIR))
 
 ################################################################################
 # Visualizations
@@ -1146,7 +1155,7 @@ strobe_counts
 final_cohort_df.columns
 
 from utils.cohort_visualizations import create_all_visualizations
-summary_df = create_all_visualizations(final_cohort_df, output_dir='../output/final/')
+summary_df = create_all_visualizations(final_cohort_df, output_dir=str(OUTPUT_FINAL_DIR))
 
 ################################################################################
 # STROBE
@@ -1155,7 +1164,7 @@ summary_df = create_all_visualizations(final_cohort_df, output_dir='../output/fi
 from utils.strobe_diagram import create_strobe_diagrams_for_cohorts
 results = create_strobe_diagrams_for_cohorts(
       final_cohort_df,
-      output_dir='../output/final',
+      output_dir=str(OUTPUT_FINAL_DIR),
       save_figures=True,
       save_csvs=True
   )
