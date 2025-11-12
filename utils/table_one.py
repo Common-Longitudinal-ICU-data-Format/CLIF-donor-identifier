@@ -318,7 +318,7 @@ def create_table_one(final_cohort_df: pl.DataFrame, output_dir: str = 'output') 
     </html>
     """
 
-    with open(html_path, 'w') as f:
+    with open(html_path, 'w', encoding="utf-8") as f:
         f.write(html_with_style)
     print(f"✓ Saved Table 1 to {html_path}")
 
