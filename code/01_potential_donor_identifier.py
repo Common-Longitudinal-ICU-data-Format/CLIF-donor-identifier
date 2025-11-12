@@ -443,10 +443,10 @@ final_cohort_df = final_cohort_df.join(
     how='left'
 )
 # Only cast birth_date to datetime if not already a datetime type
-if final_cohort_df.schema["birth_date"] != pl.Datetime:
-    final_cohort_df = final_cohort_df.with_columns(
-        pl.col('birth_date').str.to_datetime().alias('birth_date')
-    )
+# if final_cohort_df.schema["birth_date"] != pl.Datetime:
+#     final_cohort_df = final_cohort_df.with_columns(
+#         pl.col('birth_date').str.to_datetime().alias('birth_date')
+#     )
 
 # Calculate age at death as (discharge_dttm - birth_date) in years (using .dt.total_days()/365.25)
 final_cohort_df = final_cohort_df.with_columns(
