@@ -28,6 +28,8 @@ from clifpy.utils.stitching_encounters import stitch_encounters
 from utils.outlier_handler import apply_outlier_handling
 import gc
 
+# Fix Windows encoding issue for Unicode characters
+sys.stdout.reconfigure(encoding='utf-8')
 site_name = config['site_name']
 tables_path = config['tables_path']
 file_type = config['file_type']
@@ -440,6 +442,11 @@ final_cohort_df = final_cohort_df.join(
     on='patient_id',
     how='left'
 )
+# Only cast birth_date to datetime if not already a datetime type
+if final_cohort_df.schema["birth_date"] != pl.Datetime:
+    final_cohort_df = final_cohort_df.with_columns(
+        pl.col('birth_date').str.to_datetime().alias('birth_date')
+    )
 
 # Calculate age at death as (discharge_dttm - birth_date) in years (using .dt.total_days()/365.25)
 final_cohort_df = final_cohort_df.with_columns(

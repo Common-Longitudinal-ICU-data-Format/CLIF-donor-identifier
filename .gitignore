@@ -15,3 +15,4 @@ output_ucmc/
 notebook_to_script.py
 multi_site_analysis.py
 all_site_data
+output_polars/
