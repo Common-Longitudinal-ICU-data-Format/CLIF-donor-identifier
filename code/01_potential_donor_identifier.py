@@ -1126,6 +1126,92 @@ clif_eligible_n = final_cohort_df.filter(pl.col('clif_eligible_donors'))['patien
 strobe_counts["clif_eligible_donors"] = clif_eligible_n
 
 ################################################################################
+# CLIF Donor Organ Eligibility Statistics
+################################################################################
+# Individual lab threshold flags for Table One
+final_cohort_df = final_cohort_df.with_columns([
+    # Terminal creatinine < 4
+    (
+        (pl.col('creatinine_value').is_not_null()) &
+        (pl.col('creatinine_value') < 4)
+    ).alias('creatinine_lt_4'),
+
+    # Terminal bilirubin < 4
+    (
+        (pl.col('bilirubin_total_value').is_not_null()) &
+        (pl.col('bilirubin_total_value') < 4)
+    ).alias('bilirubin_lt_4'),
+
+    # Terminal AST < 700
+    (
+        (pl.col('ast_value').is_not_null()) &
+        (pl.col('ast_value') < 700)
+    ).alias('ast_lt_700'),
+
+    # Terminal ALT < 700
+    (
+        (pl.col('alt_value').is_not_null()) &
+        (pl.col('alt_value') < 700)
+    ).alias('alt_lt_700'),
+])
+
+# BMI-filtered versions of terminal lab thresholds (for fair comparison)
+final_cohort_df = final_cohort_df.with_columns([
+    # Terminal creatinine < 4 (BMI ≤50 only)
+    (
+        (pl.col('bmi_eligible') == True) &
+        (pl.col('creatinine_value').is_not_null()) &
+        (pl.col('creatinine_value') < 4)
+    ).alias('creatinine_lt_4_bmi50'),
+
+    # Terminal bilirubin < 4 (BMI ≤50 only)
+    (
+        (pl.col('bmi_eligible') == True) &
+        (pl.col('bilirubin_total_value').is_not_null()) &
+        (pl.col('bilirubin_total_value') < 4)
+    ).alias('bilirubin_lt_4_bmi50'),
+
+    # Terminal AST < 700 (BMI ≤50 only)
+    (
+        (pl.col('bmi_eligible') == True) &
+        (pl.col('ast_value').is_not_null()) &
+        (pl.col('ast_value') < 700)
+    ).alias('ast_lt_700_bmi50'),
+
+    # Terminal ALT < 700 (BMI ≤50 only)
+    (
+        (pl.col('bmi_eligible') == True) &
+        (pl.col('alt_value').is_not_null()) &
+        (pl.col('alt_value') < 700)
+    ).alias('alt_lt_700_bmi50'),
+])
+
+# Filter to CLIF donors only (883 patients)
+clif_donors_df = final_cohort_df.filter(pl.col('clif_eligible_donors'))
+
+# Count organ eligibility among CLIF donors
+clif_kidney_eligible_n = clif_donors_df.filter(pl.col('kidney_eligible'))['patient_id'].n_unique()
+clif_liver_eligible_n = clif_donors_df.filter(pl.col('liver_eligible'))['patient_id'].n_unique()
+clif_both_eligible_n = clif_donors_df.filter(
+    pl.col('kidney_eligible') & pl.col('liver_eligible')
+)['patient_id'].n_unique()
+
+# Calculate percentages
+clif_kidney_pct = (clif_kidney_eligible_n / clif_eligible_n * 100) if clif_eligible_n > 0 else 0
+clif_liver_pct = (clif_liver_eligible_n / clif_eligible_n * 100) if clif_eligible_n > 0 else 0
+clif_both_pct = (clif_both_eligible_n / clif_eligible_n * 100) if clif_eligible_n > 0 else 0
+
+# Add to strobe_counts for tracking
+strobe_counts["clif_kidney_eligible"] = clif_kidney_eligible_n
+strobe_counts["clif_liver_eligible"] = clif_liver_eligible_n
+strobe_counts["clif_both_kidney_liver_eligible"] = clif_both_eligible_n
+
+print(f"\nCLIF Donor Organ Eligibility (n={clif_eligible_n}):")
+print(f"  Kidney eligible (Cr <4 AND not on CRRT): {clif_kidney_eligible_n} ({clif_kidney_pct:.1f}%)")
+print(f"  Liver eligible (Bili <4 AND AST <700 AND ALT <700): {clif_liver_eligible_n} ({clif_liver_pct:.1f}%)")
+print(f"  Both kidney AND liver eligible: {clif_both_eligible_n} ({clif_both_pct:.1f}%)")
+
+################################################################################
 # Patient assessments
 ################################################################################
 

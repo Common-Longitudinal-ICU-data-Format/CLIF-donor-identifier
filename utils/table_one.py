@@ -58,7 +58,21 @@ def create_table_one(final_cohort_df: pl.DataFrame, output_dir: str = 'output') 
         'race_category',
         'ethnicity_category',
         'sex_category',
-        'first_admission_location'
+        'first_admission_location',
+        # Combined organ eligibility criteria
+        'kidney_eligible',  # Cr <4 AND not on CRRT
+        'liver_eligible',   # Bili <4 AND AST <700 AND ALT <700
+        'on_crrt_48h_before_death',  # CRRT status
+        # Terminal lab thresholds (all patients)
+        'creatinine_lt_4',
+        'bilirubin_lt_4',
+        'ast_lt_700',
+        'alt_lt_700',
+        # Terminal lab thresholds (BMI ≤50 only)
+        'creatinine_lt_4_bmi50',
+        'bilirubin_lt_4_bmi50',
+        'ast_lt_700_bmi50',
+        'alt_lt_700_bmi50'
     ]
 
     numerical_vars = [
@@ -133,24 +147,65 @@ def create_table_one(final_cohort_df: pl.DataFrame, output_dir: str = 'output') 
     # Debug print to verify it was added
     print(f"Data Collection Period row added to summary_data")
 
+    # Custom labels for boolean/threshold variables
+    custom_labels = {
+        # Combined eligibility
+        'kidney_eligible': 'Kidney Eligible (Cr <4 AND not on CRRT)',
+        'liver_eligible': 'Liver Eligible (Bili <4 AND AST <700 AND ALT <700)',
+        'on_crrt_48h_before_death': 'On CRRT within 48h of death',
+        # Terminal thresholds (all patients)
+        'creatinine_lt_4': 'Terminal Creatinine < 4',
+        'bilirubin_lt_4': 'Terminal Bilirubin < 4',
+        'ast_lt_700': 'Terminal AST < 700',
+        'alt_lt_700': 'Terminal ALT < 700',
+        # Terminal thresholds (BMI ≤50 only)
+        'creatinine_lt_4_bmi50': 'Terminal Creatinine < 4 (BMI ≤50)',
+        'bilirubin_lt_4_bmi50': 'Terminal Bilirubin < 4 (BMI ≤50)',
+        'ast_lt_700_bmi50': 'Terminal AST < 700 (BMI ≤50)',
+        'alt_lt_700_bmi50': 'Terminal ALT < 700 (BMI ≤50)'
+    }
+
     # ============================================
     # Categorical variables
     # ============================================
     for var_name in categorical_vars:
+        # Check if this variable exists in the dataframe
+        if var_name not in final_cohort_df.columns:
+            print(f"Warning: Variable {var_name} not found in dataframe, skipping...")
+            continue
+
         # Get unique categories
         all_categories = final_cohort_df.select(var_name).unique().to_series().to_list()
-        categories = sorted([c for c in all_categories if c is not None])
 
-        for category in categories:
-            row = {'Variable': var_name.replace('_', ' ').title(), 'Category': str(category)}
+        # Check if this is a boolean flag
+        is_boolean = all(v in [True, False, None] for v in all_categories if v is not None)
+
+        if is_boolean:
+            # For boolean flags, only show True counts
+            var_label = custom_labels.get(var_name, var_name.replace('_', ' ').title())
+            row = {'Variable': var_label, 'Category': ''}
 
             for cohort_name, cohort_df in cohorts.items():
-                n = cohort_df.filter(pl.col(var_name) == category).shape[0]
+                n = cohort_df.filter(pl.col(var_name) == True).shape[0]
                 total = cohort_df.shape[0]
                 pct = (n / total * 100) if total > 0 else 0
                 row[cohort_name.replace(' ', '_')] = f"{n} ({pct:.1f}%)"
 
             summary_data.append(row)
+        else:
+            # Original categorical processing
+            categories = sorted([c for c in all_categories if c is not None])
+
+            for category in categories:
+                row = {'Variable': var_name.replace('_', ' ').title(), 'Category': str(category)}
+
+                for cohort_name, cohort_df in cohorts.items():
+                    n = cohort_df.filter(pl.col(var_name) == category).shape[0]
+                    total = cohort_df.shape[0]
+                    pct = (n / total * 100) if total > 0 else 0
+                    row[cohort_name.replace(' ', '_')] = f"{n} ({pct:.1f}%)"
+
+                summary_data.append(row)
 
     # ============================================
     # Numerical variables
