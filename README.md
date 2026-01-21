@@ -70,7 +70,9 @@ Update `config/config.json` with paths to your CLIF data files:
   "site_name": "Your Site Name",
   "tables_path": "/path/to/clif/tables",
   "file_type": "csv",
-  "project_root": "/path/to/project"
+  "timezone": "eg. US/Eastern",
+  "project_root": "path/to/this/project", 
+  "SRTR_data_path": "path/to/SAF Q2 2025/pubsaf2506"
 }
 ```
 
@@ -83,7 +85,7 @@ uv sync
 ### 3. Run the Analysis 
 
 1. Open and execute `code/01_potential_donor_identifier.ipynb` in Jupyter. or run `uv run code/01_potential_donor_identifier.py`
-2. If you have access to the SRTR dataset, update the config with that path, download the `unons_donors_clif.csv` from the (box folder)[https://uchicago.box.com/s/ba99794d1zdp0d76zzzv09evy9itf0zs] and save it in the utils directory. Then run `code/02_srtr_linkage.ipynb`
+2. If you have access to the SRTR dataset, update the config with that path, download the `unons_donors_clif.csv` from the [box folder](https://uchicago.box.com/s/ba99794d1zdp0d76zzzv09evy9itf0zs) and save it in the utils directory. Then run `code/02_srtr_linkage.ipynb`
 
 
 ### 4. Review Outputs
