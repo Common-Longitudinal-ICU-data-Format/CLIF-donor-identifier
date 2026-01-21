@@ -1,0 +1,46 @@
+{
+  "ucmc": {
+    "name": "University of Chicago Medical Center",
+    "provider_numbers": [140088]
+  },
+  "upenn": {
+    "name": "University of Pennsylvania",
+    "provider_numbers": [390111, 390226, 390223, 390179, 390174, 310010]
+  },
+  "nu": {
+    "name": "Northwestern University",
+    "provider_numbers": [140281, 140242, 140211, 140130, 140286, 140116]
+  },
+  "jhu": {
+    "name": "Johns Hopkins University",
+    "provider_numbers": [210009, 210029, 210048, 210022, 90005]
+  },
+  "michigan": {
+    "name": "University of Michigan",
+    "provider_numbers": [230046]
+  },
+  "ohsu": {
+    "name": "Oregon Health & Science University",
+    "provider_numbers": [380009, 380021, 380047]
+  },
+  "rush": {
+    "name": "Rush University Medical Center",
+    "provider_numbers": [140119]
+  },
+  "umn": {
+    "name": "University of Minnesota",
+    "provider_numbers": [240080, 240040, 240141, 240064, 240050, 240213, 240207, 240210, 240078, 240010]
+  },
+  "emory": {
+    "name": "Emory University",
+    "provider_numbers": [110010, 110078, 110230]
+  },
+  "mimic": {
+    "name": "MIMIC Database",
+    "provider_numbers": [220086]
+  },
+  "ucsf": {
+    "name": "University of California San Francisco",
+    "provider_numbers": [50454]
+  }
+}

@@ -1,0 +1,114 @@
+---
+title: "clif_donor_dems"
+output: html_document
+date: "2025-09-29"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(readxl)
+library(haven)
+library(dplyr)
+```
+
+
+```{r setup, include=FALSE}
+donor_ids = read_excel("'/Users/kavenchhikara/Projects/CLIF/CLIF-donor-identifier/icd10orderfiles/UNOS donors in CLIF hospitals 2010-2024.xlsx'", sheet = "Donor IDS")
+
+donor_deceased = read_sas("'/Users/kavenchhikara/Library/CloudStorage/Box-Box/SAF Q2 2025/pubsaf2506/donor_deceased.sas7bdat'")
+institution = read_sas("'/Users/kavenchhikara/Library/CloudStorage/Box-Box/SAF Q2 2025/pubsaf2506/institution.sas7bdat'")
+```
+
+
+```{r setup, include=FALSE}
+donor_ids_list = donor_ids %>% 
+  pull(DONOR_ID)
+donor_deceased_filt = donor_deceased %>% filter(DONOR_ID %in% donor_ids_list)
+
+
+donor_deceased_filt = donor_deceased_filt %>%
+  mutate(cod = case_when(
+    DON_CAD_DON_COD == 1 ~ "Anoxia",
+    DON_CAD_DON_COD == 2 ~ "Cerebrovascular/Stroke",
+    DON_CAD_DON_COD == 3 ~ "Head Trauma",
+    DON_CAD_DON_COD == 4 ~ "CNS Tumor",
+    DON_CAD_DON_COD == 998 ~ "Unknown",
+    TRUE ~ "Other"
+  ),
+  race = case_when(
+    DON_RACE_SRTR == "BLACK" ~ "Black",
+    DON_RACE_SRTR == "WHITE" ~ "White",
+    DON_RACE_SRTR == "ASIAN" ~ "Asian",
+    TRUE ~ "Other"
+  ),
+  latino = case_when(
+    DON_ETHNICITY_SRTR == "LATINO" ~ 1,
+    TRUE ~ 0),
+  donation_type = case_when(
+    !is.na(DON_DCD_SUPPORT_WITHDRAW_DT) ~ "DCD",
+    TRUE ~ "DBD"
+  ),
+  diabetes = case_when(
+    DON_HIST_DIAB %in% c(2,3,4,5) ~ 1,
+    TRUE ~ 0
+  ),
+  hypertension = case_when(
+    DON_HIST_HYPERTEN %in% c(2,3,4,5) ~ 1,
+    TRUE ~ 0
+  )
+  )
+  
+
+library(gtsummary)
+
+donor_deceased_filt = donor_deceased_filt %>%
+  left_join(donor_ids)
+donor_deceased_filt %>%
+  select(DON_AGE, cod, DON_RACE_SRTR, latino, donation_type, diabetes, hypertension, DON_HGT_CM, DON_WGT_KG, DON_CREAT ) %>%
+  tbl_summary()
+
+
+#DON_BUN, DON_HIST_CIGARETTE_GT20_PKYR, DON_CLINICAL_INFECT, DON_ANTI_CMV, DON_HIST_COCAINE, DON_DDAVP, DON_EBV_IGG, DON_EBV_IGM, DON_HYPERTEN_DIURETICS, DON_PRERECOV_DIURETICS, DON_HBV_SURF_ANTIBODY,
+
+
+don_deceased_clif = donor_deceased_filt %>%
+  mutate(
+    clif_site = case_when(
+      DON_HOSP_PROVIDER_NUM %in% c(110010, 110078, 110230) ~ "Emory",
+      DON_HOSP_PROVIDER_NUM %in% c(210009, 210029, 210048, 210022, 90005) ~ "JHU", 
+      DON_HOSP_PROVIDER_NUM == 230046 ~ "Michigan",
+      DON_HOSP_PROVIDER_NUM == 220086 ~ "MIMIC",
+      DON_HOSP_PROVIDER_NUM %in% c(140281, 140242, 140211, 140130, 140286, 140116) ~ "NU",
+      DON_HOSP_PROVIDER_NUM %in% c(380009, 380021) ~ "OHSU",
+      DON_HOSP_PROVIDER_NUM %in% c(390111, 390226, 390223, 390179, 310010) ~ "Penn",
+      DON_HOSP_PROVIDER_NUM == 140119 ~ "RUMC",
+      DON_HOSP_PROVIDER_NUM == 140088 ~ "UCMC",
+      DON_HOSP_PROVIDER_NUM == 50454 ~ "UCSF",
+      DON_HOSP_PROVIDER_NUM %in% c(240080, 240040, 240141, 240064, 240050, 240213, 240207,
+240210, 240078) ~ "UMN",
+TRUE ~ NA)
+    )
+
+
+summary_table_donors = don_deceased_clif %>%
+  select(DON_AGE, cod, DON_RACE_SRTR, latino, donation_type, diabetes, hypertension, DON_HGT_CM, DON_WGT_KG, DON_CREAT, clif_site) %>%
+  tbl_summary(by = clif_site,
+              label = list(
+      DON_AGE ~ "Age",
+      cod ~ "Cause of Death",
+      DON_RACE_SRTR ~ "Race",
+      latino ~ "Hispanic/Latino",
+      donation_type ~ "Donation Type",
+      diabetes ~ "Diabetes",
+      hypertension ~ "Hypertension",
+      DON_HGT_CM ~ "Height (cm)",
+      DON_WGT_KG ~ "Weight (kg)",
+      DON_CREAT ~ "Creatinine"
+    ))
+
+summary_table_donors
+gt_tbl <- as_gt(summary_table_donors)
+gt::gtsave(gt_tbl, "table1_clif_donors.html", inline_css = TRUE)
+```
+

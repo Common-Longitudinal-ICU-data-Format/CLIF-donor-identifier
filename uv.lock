@@ -436,6 +436,7 @@ dependencies = [
     { name = "polars" },
     { name = "pyarrow", version = "21.0.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
     { name = "pyarrow", version = "22.0.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
+    { name = "sas7bdat" },
 ]
 
 [package.metadata]
@@ -447,6 +448,7 @@ requires-dist = [
     { name = "pandas", specifier = ">=2.3.3" },
     { name = "polars", specifier = ">=0.20.0" },
     { name = "pyarrow", specifier = ">=12.0.0" },
+    { name = "sas7bdat", specifier = ">=2.2.3" },
 ]
 
 [[package]]
@@ -3888,6 +3890,15 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/46/c9/ffe77999ed8f81e30713dd38fd9ecaa161f28ec48bb80fa1cd9118399c27/rpds_py-0.28.0-pp311-pypy311_pp73-musllinux_1_2_i686.whl", hash = "sha256:7b0f9dceb221792b3ee6acb5438eb1f02b0cb2c247796a72b016dcc92c6de829", size = 585453, upload-time = "2025-10-22T22:24:24.779Z" },
     { url = "https://files.pythonhosted.org/packages/ed/d2/4a73b18821fd4669762c855fd1f4e80ceb66fb72d71162d14da58444a763/rpds_py-0.28.0-pp311-pypy311_pp73-musllinux_1_2_x86_64.whl", hash = "sha256:5d0145edba8abd3db0ab22b5300c99dc152f5c9021fab861be0f0544dc3cbc5f", size = 552199, upload-time = "2025-10-22T22:24:26.54Z" },
 ]
+
+[[package]]
+name = "sas7bdat"
+version = "2.2.3"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "six" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/4d/7b/d41d280b12c776e67c840bace0e5f02acda6adb13cd1fbb04293ece0bc3c/sas7bdat-2.2.3.tar.gz", hash = "sha256:484c609d962442203c15bc719a638de992a23cd13bc1971a5af6dfb0daf9f797", size = 16053, upload-time = "2019-07-15T15:29:53.504Z" }
 
 [[package]]
 name = "scipy"

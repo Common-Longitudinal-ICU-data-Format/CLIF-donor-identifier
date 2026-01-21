@@ -82,7 +82,8 @@ uv sync
 
 ### 3. Run the Analysis 
 
-Open and execute `code/01_potential_donor_identifier.ipynb` in Jupyter. or run `uv run code/01_potential_donor_identifier.py`
+1. Open and execute `code/01_potential_donor_identifier.ipynb` in Jupyter. or run `uv run code/01_potential_donor_identifier.py`
+2. If you have access to the SRTR dataset, update the config with that path, download the `unons_donors_clif.csv` from the (box folder)[https://uchicago.box.com/s/ba99794d1zdp0d76zzzv09evy9itf0zs] and save it in the utils directory. Then run `code/02_srtr_linkage.ipynb`
 
 
 ### 4. Review Outputs

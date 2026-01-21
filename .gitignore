@@ -16,3 +16,10 @@ notebook_to_script.py
 multi_site_analysis.py
 all_site_data
 output_polars/
+
+create_clean_funnels.py
+create_combined_circles.py
+get_both_organ_eligible.py
+unos_donors_clif.xlsx
+unos_donors_clif.csv
+dataDictionary.html
