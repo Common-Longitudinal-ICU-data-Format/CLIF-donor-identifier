@@ -17,7 +17,6 @@ without Race and Hepatitis C Virus. 2024.
 from __future__ import annotations
 
 import math
-from typing import Optional
 
 # --------------------------------------------------------------------------
 # Constants (from references/kdpi_guide.pdf and kdpi_mapping_table.pdf)
