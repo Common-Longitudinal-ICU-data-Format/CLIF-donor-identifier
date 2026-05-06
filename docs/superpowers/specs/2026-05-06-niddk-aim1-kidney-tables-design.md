@@ -43,6 +43,7 @@ Columns: Variable | Overall | Moderate | High
 | Terminal creatinine (CLIF) | CLIF `creatinine_value` (last value during hospitalization, already in `final_clif_data.parquet`) | mg/dL | median (IQR) |
 | Terminal creatinine (SRTR) | SRTR `DON_FINAL_SERUM_CREAT` | mg/dL | median (IQR) |
 | Vasopressors within 48h death | CLIF `wide_df` | any of {norepinephrine, epinephrine, phenylephrine, vasopressin, dopamine} with non-null/non-zero dose during `[death_dttm − 48h, death_dttm]` | n (%) yes |
+| IMV within 48h death | CLIF `wide_df` | `resp_device_category` = 'IMV' on any row during `[death_dttm − 48h, death_dttm]`. *Note: ~100% by construction since the CLIF cohort filter already requires IMV in this window; reported as a completeness/sanity confirmation row.* | n (%) yes |
 | ICU LOS | CLIF `adt` | sum of time with `location_category='icu'` across stays, in days | median (IQR) |
 
 **Explicitly excluded:** HgbA1c — not present in CLIF labs at this site.
@@ -181,6 +182,7 @@ Both edits are made in place in the existing files (no parallel loaders or sidec
 3. Compute per-donor KDPI via `utils.kdpi.compute_kdpi`.
 4. Compute CLIF-derived variables:
    - **Vasopressors-within-48h flag**: from `wide_df`, group by `hospitalization_id` and look at rows in `[death_dttm − 48h, death_dttm]`. Flag = any of {`med_cont_norepinephrine`, `med_cont_epinephrine`, `med_cont_phenylephrine`, `med_cont_vasopressin`, `med_cont_dopamine`} non-null and > 0.
+   - **IMV-within-48h flag**: from `wide_df`, same window as vasopressors. Flag = any row with `resp_device_category == 'IMV'`. Expected ~100% in the M+H cohort by construction (CLIF cohort requires IMV in this window); reported for completeness.
    - **ICU LOS**: from `adt`, filter to `location_category='icu'` and the matched `hospitalization_id`s. Sum `(out_dttm − in_dttm)` per hospitalization, convert to days.
 5. Build Table 1 and Table 2 via a small helper (see §8).
 6. Build the creatinine trajectory figure.
