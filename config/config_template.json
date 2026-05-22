@@ -1,8 +1,7 @@
 {
-    "site_name": "Your_Site_Name",
+    "site_name": "Your_Site_Name allowed: ucmc, upenn, nu, jhu, michigan, ohsu, rush, umn, emory, mimic, ucsf",
     "tables_path": "/path/to/tables/",
-    "file_type": "csv/parquet/", 
+    "file_type": "parquet/", 
     "timezone": "eg. US/Eastern",
     "project_root": "path/to/this/project",
-    "SRTR_data_path": "path/to/SAF Q2 2025/pubsaf2506"
 }
