@@ -1,116 +1,78 @@
-# Identifying medically eligible deceased organ donors in federated intensive care datasets
+# CLIF Donor Identifier
 
-## CLIF Version
-2.1.0
+Identifies medically eligible deceased organ donors from CLIF inpatient deaths using two parallel definitions (**CALC** and **CLIF**). Produces STROBE diagrams, baseline characteristics tables, and donor-eligibility funnels.
 
-## Objective
+**CLIF Version:** 2.1.0
+**Cohort window:** 2020-01-01 to 2025-12-31 (both admission and discharge must fall within)
 
-This project identifies potential deceased organ donors from inpatient hospital deaths using two evidence-based criteria definitions: **CALC** (Cause, Age, Location-consistent) and **CLIF**. The code produces cohort selection diagrams, and baseline characteristics tables.
+## Cohort definitions
 
-## Cohort Identification
+| Criterion | CALC | CLIF |
+|---|---|---|
+| In-hospital death (`discharge_category = expired`) | ✓ | ✓ |
+| Age ≤75 at death | ✓ | ✓ |
+| Cause of death (ICD-10: I20–I25, I60–I69, V01–Y89) | ✓ | — |
+| IMV ≤48 h before death | — | ✓ |
+| No sepsis or active cancer (ICD-10) | ✓ | ✓ |
+| No positive blood culture ≤48 h before death | — | ✓ |
+| BMI ≤50 | — | ✓ |
+| Kidney (terminal Cr <4 AND no CRRT ≤48 h) **OR** Liver (terminal Bili <4 AND AST <700 AND ALT <700) | — | ✓ |
 
-### Cohort Definition: CALC (Cause, Age, Location-Consistent)
+A third stratum, **Died_While_IMV**, is also reported: age ≤75 inpatient decedents on IMV ≤48 h before death (= CLIF Stage 3, before contraindication / organ-quality filters).
 
-Patients meeting the CMS criteria for "deaths consistent with organ donation":
+References: [CMS OPO Final Rule](https://www.cms.gov/files/document/112020-opo-final-rule-cms-3380-f.pdf) (CALC).
 
-1. **All inpatient hospital deaths** - base cohort from hospitalization table with `discharge_category` = 'expired'
-2. **Age ≤ 75 years** - calculated from `birth_date` and `discharge_dttm`
-3. **Cause of death consistent with donation** (ICD-10-CM codes):
-   - Ischemic heart disease (I20–I25)
-   - Cerebrovascular disease (I60–I69)
-   - External causes/trauma (V01–Y89): blunt/penetrating trauma, overdose, drowning, asphyxiation, suicide, homicide
-4. **No contraindications** - absence of:
-   - Sepsis (ICD-10-CM specified codes)
-   - Active cancer (ICD-10-CM specified codes)
-
-Reference: [CMS OPO Final Rule](https://www.cms.gov/files/document/112020-opo-final-rule-cms-3380-f.pdf)
-
-### Cohort Definition: CLIF (CLIF-Eligible Donors)
-
-Medically eligible potential deceased abdominal organ donors:
-
-1. **All inpatient hospital deaths** - death location must be ED, Ward, Stepdown, or ICU
-2. **Age ≤ 75 years**
-3. **On invasive mechanical ventilation (IMV)** - within 48 hours before death
-4. **No contraindications**:
-   - No positive blood cultures within 48 hours of death
-   - No sepsis or active cancer diagnoses
-5. **Pass organ quality assessment**:
-   - **Kidney eligible**: Creatinine < 4 mg/dL AND not on CRRT
-   - **Liver eligible**: All three labs recorded with values: Total bilirubin < 4, AST < 700, ALT < 700
-   - **BMI eligible**: BMI ≤ 50 kg/m²
-   - Overall: (Kidney OR Liver) AND BMI eligible
-
-## Expected Results
-
-The analysis produces the following outputs in `output/final/`:
-
-### Visualizations
-- **strobe_calc_definition.png** - STROBE flow diagram for CALC donor identification
-- **strobe_clif_definition.png** - STROBE flow diagram for CLIF donor identification
-- **cohort_funnels_side_by_side.png** - Side-by-side comparison funnels for both definitions
-- **cohort_concentric_circles_side_by_side.png** - Visual comparison of nested circle diagrams
-
-### Data Files
-- **strobe_calc_definition.csv** - Stage-by-stage dropout counts for CALC definition
-- **strobe_clif_definition.csv** - Stage-by-stage dropout counts for CLIF definition
-- **table_one.csv** - Baseline characteristics across Overall, CALC, and CLIF cohorts
-- **table_one.html** - Formatted Table 1 baseline characteristics report
-- **final_cohort_df.parquet** - (INTERMEDIATE) Complete analytical dataset with all calculated flags
-
-
-## Detailed Instructions for Running the Project
-
-### 1. Configure Data Input
-
-Update `config/config.json` with paths to your CLIF data files:
-
-```json
-{
-  "site_name": "Your Site Name",
-  "tables_path": "/path/to/clif/tables",
-  "file_type": "csv",
-  "timezone": "eg. US/Eastern",
-  "project_root": "path/to/this/project", 
-  "SRTR_data_path": "path/to/SAF Q2 2025/pubsaf2506"
-}
-```
-
-### 2. Set Up Project Environment
+## How to run
 
 ```bash
+# 1. Configure
+cp config/config_template.json config/config.json
+# Edit config.json with your site_name, tables_path, file_type, timezone
+
+# 2. Install dependencies
 uv sync
+
+# 3. Run
+uv run python code/01_potential_donor_identifier.py
 ```
 
-### 3. Run the Analysis 
+All outputs land in `output/final/`. The full stdout is mirrored to `output/final/run_log.txt`.
 
-1. Open and execute `code/01_potential_donor_identifier.ipynb` in Jupyter. or run `uv run code/01_potential_donor_identifier.py`
-2. If you have access to the SRTR dataset, update the config with that path, download the `unos_donors_clif.csv` from the [box folder](https://uchicago.box.com/s/ba99794d1zdp0d76zzzv09evy9itf0zs) and save it in the utils directory. Then run `code/02_srtr_linkage.ipynb`
+## Outputs (in `output/final/`)
 
+| File | Contents |
+|---|---|
+| `table_one.csv` / `.html` | Baseline characteristics, 4 cohort columns: Overall / Died_While_IMV / CALC_Donors / CLIF_Donors. Demographics, ICU LOS, organ-eligibility flags, terminal labs, and comorbidities (HCV / Hypertension / Diabetes / Hx CVA). |
+| `aim1_table_two_by_terminal_cr.csv` | Patient characteristics in the Died_While_IMV cohort stratified by terminal Cr `<2 mg/dL` vs `≥2 mg/dL` vs `missing`. |
+| `cohort_numbers.csv` | Stage-by-stage CALC and CLIF cohort counts. |
+| `strobe_counts.csv` | All filter-stage counts (single row), including the new `1c_died_post_discharge_24h` diagnostic for sites with external death-registry data. |
+| `strobe_calc_definition.{csv,png}` | CALC STROBE diagram + stage table. |
+| `strobe_clif_definition.{csv,png}` | CLIF STROBE diagram + stage table. |
+| `funnel_calc.png`, `funnel_clif.png`, `funnels_side_by_side.png` | Drop-out funnel visualizations. |
+| `circles_side_by_side.png` | Concentric-circle visualization of nested cohort sizes. |
+| `run_log.txt` | Full script stdout (overwritten on each run). |
 
-### 4. Review Outputs
+Sites collaborating on the multi-site NIDDK Aim 1 effort should ship the entire `output/final/` folder via Box.
 
-All results are saved to `output/final/` with accompanying console output showing:
-- Patient counts at each filtering stage
-- Exclusion reasons and counts
-- Quality checks for data completeness
+## Comorbidity extraction
 
-## Required CLIF Tables and Fields
+HCV, Hypertension, Diabetes, and Hx CVA are flagged via ICD-10 prefix matching on `hospital_diagnosis`. Codes live in `utils/icd10_comorbidities.csv`; diagnosis codes are lowercased and stripped of periods/whitespace before matching. Sepsis and active-cancer contraindications use the existing `utils/icd10_contraindications.csv` (CCS-based codes).
 
-The following tables are required with specified columns:
+## Required CLIF tables and columns
 
-| Table Name              | Variables (with required categories/values)                   |
-|-------------------------|--------------------------------------------------------------|
-| **patient**             | `patient_id`, `death_dttm`, `birth_date`, `race_category`, `ethnicity_category`, `sex_category` |
-| **hospitalization**     | `patient_id`, `hospitalization_id`, `admission_dttm`, `discharge_dttm`, `age_at_admission`, `discharge_category` (must include 'expired'), `admission_type_category` (emergency, planned, etc.) |
-| **adt**                 | `hospitalization_id`, `in_dttm`, `out_dttm`, `location_category` (ed, ward, stepdown, icu), `location_name` |
-| **vitals**              | `hospitalization_id`, `recorded_dttm`, `vital_category` (weight_kg, height_cm required), `vital_value` |
-| **labs**                | `hospitalization_id`, `lab_collect_dttm`, `lab_category` (creatinine, bilirubin_total, ast, alt required), `lab_value_numeric` |
-| **respiratory_support** | `hospitalization_id`, `recorded_dttm`, `device_category` (imv required) |
-| **crrt_therapy**        | `hospitalization_id`, `recorded_dttm`                        |
-| **hospital_diagnosis**  | `hospitalization_id`, `diagnosis_code`, `diagnosis_code_format` (icd10, icd10cm) |
-| **microbiology_culture**| `hospitalization_id`, `fluid_category` (blood_buffy), `method_category` (culture), `collect_dttm`, `organism_category` ('no_growth' or identified organism) |
-| **patient_assessments** | `hospitalization_id`, `assessment_category` (gcs_total, rass required), `recorded_dttm`, `numerical_value` |
+| Table | Required columns / categories |
+|---|---|
+| **patient** | `patient_id`, `death_dttm`, `birth_date`, `race_category`, `ethnicity_category`, `sex_category` |
+| **hospitalization** | `patient_id`, `hospitalization_id`, `admission_dttm`, `discharge_dttm`, `age_at_admission`, `discharge_category` (must include `expired`), `admission_type_category` |
+| **adt** | `hospitalization_id`, `in_dttm`, `out_dttm`, `location_category` (ed, ward, stepdown, icu), `location_name` |
+| **vitals** | `hospitalization_id`, `recorded_dttm`, `vital_category` (`weight_kg`, `height_cm` required), `vital_value` |
+| **labs** | `hospitalization_id`, `lab_collect_dttm`, `lab_category` (`creatinine`, `bilirubin_total`, `ast`, `alt` required), `lab_value_numeric` |
+| **respiratory_support** | `hospitalization_id`, `recorded_dttm`, `device_category` (`imv` required) |
+| **crrt_therapy** | `hospitalization_id`, `recorded_dttm` |
+| **hospital_diagnosis** | `hospitalization_id`, `diagnosis_code`, `diagnosis_code_format` (`icd10`, `icd10cm`) |
+| **microbiology_culture** | `hospitalization_id`, `fluid_category` (`blood_buffy`), `method_category` (`culture`), `collect_dttm`, `organism_category` (`no_growth` or identified organism) |
+| **patient_assessments** | `hospitalization_id`, `assessment_category` (`gcs_total`, `rass`), `recorded_dttm`, `numerical_value` |
 
+## Engine note
 
-
+Large CLIF tables (`hospital_diagnosis`, `respiratory_support`, `crrt_therapy`, `labs`, `microbiology_culture`, `patient_assessments`) are queried via **DuckDB** streaming SQL on the parquet files rather than fully loaded into memory — works at any site scale. Polars is used for the cohort logic.

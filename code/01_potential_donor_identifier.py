@@ -2,10 +2,16 @@
 # -*- coding: utf-8 -*-
 
 """
-Generated from: 01_potential_donor_identifier.ipynb
+This script identifies potential organ donors based on the 
+CALC criteria and the CLIF eligible criteria using the CLIF dataset. 
+It performs the following steps:
+1. Load the required datasets
+2. Identify decedents
+3. Stitch encounters
+4. Apply outlier handling
+5. Create consort diagram
 
-This script was automatically generated from a Jupyter notebook.
-Markdown cells have been converted to comments.
+Authors: Kaveri Chhikara + Claude Opus 4.7
 """
 
 ################################################################################
@@ -16,9 +22,10 @@ Markdown cells have been converted to comments.
 # Setup
 ################################################################################
 
-import sys 
+import sys
 import os
-import polars as pl 
+import duckdb
+import polars as pl
 import matplotlib.pyplot as plt
 import pandas as pd
 from utils.config import config
@@ -44,6 +51,37 @@ UTILS_DIR = PROJECT_ROOT / "utils"
 OUTPUT_DIR = PROJECT_ROOT / "output"
 OUTPUT_FINAL_DIR = OUTPUT_DIR / "final"
 OUTPUT_INTERMEDIATE_DIR = OUTPUT_DIR / "intermediate"
+OUTPUT_FINAL_DIR.mkdir(parents=True, exist_ok=True)
+OUTPUT_INTERMEDIATE_DIR.mkdir(parents=True, exist_ok=True)
+
+# ---- Run log -----------------------------------------------------------
+# Tee stdout so every print() in this run also lands in output/final/run_log.txt.
+# Overwrites the previous run's log; sites only need the most recent.
+import atexit, datetime as _dt
+
+class _Tee:
+    """Write to multiple streams (e.g., terminal + log file) simultaneously."""
+    def __init__(self, *streams):
+        self._streams = streams
+    def write(self, msg):
+        for s in self._streams:
+            try:
+                s.write(msg); s.flush()
+            except Exception:
+                pass
+    def flush(self):
+        for s in self._streams:
+            try: s.flush()
+            except Exception: pass
+
+_RUN_LOG_PATH = OUTPUT_FINAL_DIR / "run_log.txt"
+_run_log_handle = open(_RUN_LOG_PATH, "w", encoding="utf-8")
+sys.stdout = _Tee(sys.__stdout__, _run_log_handle)
+atexit.register(lambda: (_run_log_handle.flush(), _run_log_handle.close()))
+print(f"=== Run started {_dt.datetime.now():%Y-%m-%d %H:%M:%S} ===")
+print(f"Site: {site_name} | Tables: {tables_path} | File type: {file_type}")
+print(f"Logging stdout to: {_RUN_LOG_PATH}")
+print("-" * 80)
 
 strobe_counts = {}
 
@@ -59,9 +97,57 @@ adt_df = read_data(adt_filepath, file_type)
 hospitalization_df = read_data(hospitalization_filepath, file_type)
 patient_df = read_data(patient_filepath, file_type)
 
+# Informational baseline (entire CLIF dataset at this site, all years)
 total_patients = patient_df["patient_id"].n_unique()
-strobe_counts["0_all_patients"] = total_patients
-strobe_counts
+strobe_counts["00_all_patients_in_clif"] = total_patients
+
+################################################################################
+# Apply cohort time-window filter (PDF 1 spec: 2020-01-01 to 2025-12-31)
+# STRICT: a hospitalization is kept only if BOTH admission and discharge fall
+# inside the window. This matches the SRTR donor cohort's strict calendar
+# boundaries so the two are directly comparable.
+################################################################################
+
+WINDOW_START_YEAR = 2020
+WINDOW_END_YEAR = 2025
+
+# Compare on year() to avoid timezone/precision mismatches between the
+# stored datetime[ns, UTC] columns and naive datetime literals.
+_admitted_in_window = (
+    (pl.col('admission_dttm').dt.year() >= WINDOW_START_YEAR)
+    & (pl.col('admission_dttm').dt.year() <= WINDOW_END_YEAR)
+)
+_discharged_in_window = (
+    (pl.col('discharge_dttm').dt.year() >= WINDOW_START_YEAR)
+    & (pl.col('discharge_dttm').dt.year() <= WINDOW_END_YEAR)
+)
+hospitalization_df = hospitalization_df.filter(_admitted_in_window & _discharged_in_window)
+
+# Restrict ADT to hospitalizations that survived the window filter
+_hosp_ids_in_window = hospitalization_df['hospitalization_id'].unique().to_list()
+adt_df = adt_df.filter(pl.col('hospitalization_id').is_in(_hosp_ids_in_window))
+
+# STROBE step 1: Full population — patients with any hospitalization overlapping 2020-2025
+full_population_n = hospitalization_df['patient_id'].n_unique()
+strobe_counts["0_full_population_2020_2025"] = full_population_n
+print(f"Full population (any hosp 2020-2025): {full_population_n:,}")
+
+# STROBE step 2: ICU population — subset with ≥1 ICU ADT stay
+icu_population_n = (
+    adt_df
+    .filter(pl.col('location_category').str.to_lowercase() == 'icu')
+    .join(
+        hospitalization_df.select(['hospitalization_id', 'patient_id']),
+        on='hospitalization_id',
+        how='left',
+    )
+    .select('patient_id')
+    .drop_nulls()
+    .unique()
+    .height
+)
+strobe_counts["0b_icu_population_2020_2025"] = icu_population_n
+print(f"ICU population (any ICU stay): {icu_population_n:,}")
 
 ################################################################################
 # Identify decedents
@@ -161,59 +247,60 @@ final_df = final_df.join(
     patient_df.select(demog_cols), on='patient_id', how='left'
 )
 
-# Document patients with multiple death hospitalizations
+# ----------------------------------------------------------------------
+# Death hospitalization analysis + early per-patient dedup
+# ----------------------------------------------------------------------
+# Diagnostic FIRST — show raw counts of multi-death patients (rare data
+# quirks worth surfacing), THEN unconditionally collapse to one row per
+# patient (the latest death encounter). Doing the dedup early means every
+# downstream operation operates on one-row-per-patient and the strobe
+# counts therefore agree with Table 1 by construction.
 print("\n" + "="*80)
 print("DEATH HOSPITALIZATION ANALYSIS")
 print("="*80)
 
-# Check for patients with multiple death hospitalizations
 death_encounters_per_patient = (
     final_df
     .group_by('patient_id')
     .agg([
         pl.count().alias('death_encounter_count'),
         pl.col('encounter_block').alias('encounter_blocks'),
-        pl.col('discharge_dttm').alias('discharge_times')
+        pl.col('discharge_dttm').alias('discharge_times'),
     ])
     .sort('death_encounter_count', descending=True)
 )
 
-# Calculate statistics
 total_death_encounters = len(final_df)
 unique_patients = final_df['patient_id'].n_unique()
 multi_death_patients = death_encounters_per_patient.filter(pl.col('death_encounter_count') > 1)
 num_multi_death = len(multi_death_patients)
 
 print(f"Total death hospitalizations found: {total_death_encounters:,}")
-print(f"Unique patients who died: {unique_patients:,}")
-print(f"Patients with multiple death hospitalizations: {num_multi_death:,}")
+print(f"Unique patients who died:           {unique_patients:,}")
+print(f"Patients with multiple deaths:      {num_multi_death:,}")
 
 if num_multi_death > 0:
     print("\nDEBUG: Patients with multiple death hospitalizations (showing first 5):")
-    sample = multi_death_patients.head(5)
-    for row in sample.iter_rows(named=True):
+    for row in multi_death_patients.head(5).iter_rows(named=True):
         print(f"  Patient {row['patient_id']}: {row['death_encounter_count']} death hospitalizations")
         print(f"    Encounter blocks: {row['encounter_blocks']}")
-        print(f"    Discharge times: {row['discharge_times']}")
-
-    print(f"\nWARNING: Found {num_multi_death} patients with multiple death hospitalizations!")
-    print("This likely indicates a data quality issue or patients who were resuscitated.")
-
-    # Keep only the LAST death hospitalization (most recent discharge_dttm) for each patient
-    print("\nDeduplicating: keeping only the LAST death hospitalization per patient...")
-    final_df = (
-        final_df
-        .sort(['patient_id', 'discharge_dttm'])
-        .group_by('patient_id')
-        .last()  # Keep the last (most recent) death
-    )
-
-    # Verify deduplication
-    assert final_df['patient_id'].n_unique() == len(final_df), "Deduplication failed - duplicate patient_ids remain"
-    print(f"After deduplication: {len(final_df):,} unique patients with their final death hospitalization")
+        print(f"    Discharge times:  {row['discharge_times']}")
+    print(f"\nNOTE: {num_multi_death} patients have multiple death rows — likely a data quality issue.")
+    print("Will collapse each patient to their LATEST death encounter below.")
 else:
-    print("✓ No patients with multiple death hospitalizations found - data is clean")
+    print("✓ No patients with multiple death hospitalizations — data is clean.")
 
+# Always collapse to one row per patient = the latest death encounter.
+# (For decedents the latest encounter_block IS the death encounter; before
+# this point a patient could technically have multiple expired rows due to
+# data quirks. From here on, final_df is strict patient-level.)
+final_df = (
+    final_df
+    .sort('discharge_dttm', descending=True)
+    .unique(subset='patient_id', keep='first')   # latest after desc sort
+)
+assert final_df['patient_id'].n_unique() == len(final_df), "Early dedup failed"
+print(f"\n✓ After early dedup: {len(final_df):,} unique patients (one row each).")
 print("="*80 + "\n")
 
 decedents_df_n = final_df["patient_id"].n_unique()
@@ -270,26 +357,33 @@ vitals_first_last = vitals_first_last.with_columns(
 # Join with final_df
 final_df = final_df.join(vitals_first_last, on='hospitalization_id', how='left')
 
-# Define final_death_dttm as death_dttm, if missing then last_recorded_vital_dttm
-# If death_dttm is after discharge_dttm, update death_dttm to discharge_dttm
+# Define final_death_dttm using the actual death timestamp where present.
+# We deliberately do NOT cap death_dttm at discharge_dttm — sites that pull
+# death data from external registries (state vital records, SSA Death Master,
+# etc.) can legitimately have death_dttm > discharge_dttm for patients who
+# were discharged alive and died later. Those patients should NOT pass the
+# downstream 48-h before-death donor filters, and trusting death_dttm
+# directly makes that natural (their in-hospital labs/vitals will fall
+# outside the 48-h window relative to their later death).
+# Fall back to last_recorded_vital_dttm only when death_dttm is null.
 final_df = final_df.with_columns(
-    pl.when(
-        (pl.col("death_dttm").is_not_null()) &
-        (pl.col("discharge_dttm").is_not_null()) &
-        (pl.col("death_dttm") > pl.col("discharge_dttm"))
-    )
-    .then(pl.col("discharge_dttm"))
-    .otherwise(pl.col("death_dttm"))
-    .alias("adjusted_death_dttm")
-)
-
-# Now define final_death_dttm as adjusted_death_dttm if present, else last_recorded_vital_dttm
-final_df = final_df.with_columns(
-    pl.when(pl.col("adjusted_death_dttm").is_not_null())
-      .then(pl.col("adjusted_death_dttm"))
+    pl.when(pl.col("death_dttm").is_not_null())
+      .then(pl.col("death_dttm"))
       .otherwise(pl.col("last_recorded_vital_dttm"))
       .alias("final_death_dttm")
 )
+
+# Diagnostic: how many decedents have death_dttm > discharge_dttm + 24h?
+# This indicates sites with external death-registry data linked into CLIF;
+# such patients were discharged alive and died later — they auto-fail the
+# CLIF donor criteria but remain in the cohort for transparency.
+_delayed_death = final_df.filter(
+    pl.col("death_dttm").is_not_null()
+    & pl.col("discharge_dttm").is_not_null()
+    & ((pl.col("death_dttm") - pl.col("discharge_dttm")).dt.total_hours() > 24)
+)["patient_id"].n_unique()
+strobe_counts["1c_died_post_discharge_24h"] = _delayed_death
+print(f"Decedents with death_dttm > discharge_dttm + 24h (likely external registry): {_delayed_death:,}")
 
 ################################################################################
 # Inpatient decedents
@@ -546,73 +640,85 @@ contraindication_codes = (
 
 print(f"Loaded {len(contraindication_codes)} contraindication ICD-10 codes")
 
-# ---- 1) Normalize codes and create ICD-10 cause flags per diagnosis row ----
-# Assumes hospital_dx has at least: hospitalization_id, diagnosis_code, diagnosis_code_format
-hospital_dx_flags = (
-    hospital_dx
-    .with_columns([
-        pl.col("diagnosis_code")
-            .cast(pl.Utf8)
-            .str.to_lowercase()
-            .str.replace_all(r"[.\s]", "")
-            .alias("dx_norm"),
-        pl.col("diagnosis_code_format")
-            .cast(pl.Utf8)
-            .str.to_lowercase()
-            .alias("sys")
-    ])
-    .with_columns([
-        # I20–I25: ischemic heart disease
-        pl.when(pl.col("sys").is_in(["icd10", "icd10cm"]))
-            .then(pl.col("dx_norm").str.contains(r"^i2[0-5]\w*$"))
-            .otherwise(False)
-            .alias("icd10_ischemic"),
+# ---- 0b) Load comorbidity prefixes (HCV, HTN, DM, Hx CVA) from CSV ----
+# These are PREFIX matches (3-4 char ICD blocks) — e.g. 'i10' matches any
+# code starting with i10 (i10, i109, i1010, etc.). Lowercase + no periods.
+comorbidities_df = pl.read_csv(str(UTILS_DIR / "icd10_comorbidities.csv"))
+comorbidity_prefixes: dict[str, list[str]] = {}
+for row in comorbidities_df.iter_rows(named=True):
+    prefix = str(row["code_prefix"]).strip().lower().replace(".", "")
+    key = str(row["comorbidity"]).strip().lower()
+    comorbidity_prefixes.setdefault(key, []).append(prefix)
+print(f"Loaded comorbidity prefixes: " +
+      ", ".join(f"{k}={len(v)}" for k, v in comorbidity_prefixes.items()))
 
-        # I60–I69: cerebrovascular disease
-        pl.when(pl.col("sys").is_in(["icd10", "icd10cm"]))
-            .then(pl.col("dx_norm").str.contains(r"^i6[0-9]\w*$"))
-            .otherwise(False)
-            .alias("icd10_cerebro"),
+# ---- 1) Compute ICD-10 cause + comorbidity flags via DuckDB SQL ----
+# DuckDB streams the parquet file rather than loading all of hospital_diagnosis
+# into RAM, so this works at sites with very large diagnosis tables.
+# Bind helper dataframes into DuckDB's local scope (referenced by name in SQL):
+all_ids_df = pd.DataFrame({"hospitalization_id": list(all_decedent_inpatient_hosp_ids)})
+contraindication_codes_df = pd.DataFrame({"code": contraindication_codes})
 
-        # V01–Y89: external causes (exclude Y90–Y99)
-        # Matches: v01–v99, w00–w99, x00–x99, y00–y89
-        pl.when(pl.col("sys").is_in(["icd10", "icd10cm"]))
-            .then(
-                pl.col("dx_norm").str.contains(
-                    r"^(v0[1-9]|v[1-9]\d|w\d{2}|x\d{2}|y[0-8]\d)\w*$"
-                )
-            )
-            .otherwise(False)
-            .alias("icd10_external"),
+# Build SQL clauses for each comorbidity (HCV/HTN/DM/CVA) — prefix LIKE chain
+def _comorbidity_clause(key: str, prefixes: list[str]) -> str:
+    likes = " OR ".join(f"dx_norm LIKE '{p}%'" for p in prefixes)
+    return (
+        f"CASE WHEN sys IN ('icd10','icd10cm') AND ({likes}) "
+        f"THEN true ELSE false END AS icd10_{key}"
+    )
 
-        # Contraindications: check if diagnosis code is in contraindications list
-        pl.when(pl.col("sys").is_in(["icd10", "icd10cm"]))
-            .then(pl.col("dx_norm").is_in(contraindication_codes))
-            .otherwise(False)
-            .alias("icd10_contraindication"),
-    ])
+comorbidity_select_clauses = ",\n        ".join(
+    _comorbidity_clause(k, ps) for k, ps in comorbidity_prefixes.items()
+)
+comorbidity_bool_or_clauses = ",\n    ".join(
+    f"BOOL_OR(icd10_{k}) AS icd10_{k}" for k in comorbidity_prefixes
 )
 
-# --- Join patient_id from hospitalization_df ---
-hospital_dx_flags = hospital_dx_flags.join(
-    hospitalization_df.select(["hospitalization_id", "patient_id"]),
-    on="hospitalization_id",
-    how="left"
+query = f"""
+WITH hospital_dx_normalized AS (
+    SELECT
+        hospitalization_id,
+        LOWER(REGEXP_REPLACE(diagnosis_code, '[.\\s]', '', 'g')) AS dx_norm,
+        LOWER(diagnosis_code_format) AS sys
+    FROM read_parquet('{hospial_dx_filepath}')
+    WHERE hospitalization_id IN (SELECT hospitalization_id FROM all_ids_df)
+),
+hospital_dx_flags AS (
+    SELECT
+        hospitalization_id,
+        CASE WHEN sys IN ('icd10','icd10cm') AND REGEXP_MATCHES(dx_norm, '^i2[0-5]\\w*$') THEN true ELSE false END AS icd10_ischemic,
+        CASE WHEN sys IN ('icd10','icd10cm') AND REGEXP_MATCHES(dx_norm, '^i6[0-9]\\w*$') THEN true ELSE false END AS icd10_cerebro,
+        CASE WHEN sys IN ('icd10','icd10cm') AND REGEXP_MATCHES(dx_norm, '^(v0[1-9]|v[1-9]\\d|w\\d{{2}}|x\\d{{2}}|y[0-8]\\d)\\w*$') THEN true ELSE false END AS icd10_external,
+        CASE WHEN sys IN ('icd10','icd10cm') AND dx_norm IN (SELECT code FROM contraindication_codes_df) THEN true ELSE false END AS icd10_contraindication,
+        {comorbidity_select_clauses}
+    FROM hospital_dx_normalized
+),
+hospital_dx_with_patient AS (
+    SELECT h.*, hosp.patient_id
+    FROM hospital_dx_flags h
+    LEFT JOIN hospitalization_df hosp ON h.hospitalization_id = hosp.hospitalization_id
 )
+SELECT
+    patient_id,
+    BOOL_OR(icd10_ischemic) AS icd10_ischemic,
+    BOOL_OR(icd10_cerebro) AS icd10_cerebro,
+    BOOL_OR(icd10_external) AS icd10_external,
+    BOOL_OR(icd10_contraindication) AS icd10_contraindication,
+    {comorbidity_bool_or_clauses}
+FROM hospital_dx_with_patient
+WHERE patient_id IS NOT NULL
+GROUP BY patient_id
+"""
 
-# Collapse to patient level (any occurrence => True) ----
-patient_cause_flags = (
-    hospital_dx_flags
-    .group_by("patient_id")
-    .agg([
-        pl.col("icd10_ischemic").any().alias("icd10_ischemic"),
-        pl.col("icd10_cerebro").any().alias("icd10_cerebro"),
-        pl.col("icd10_external").any().alias("icd10_external"),
-        pl.col("icd10_contraindication").any().alias("icd10_contraindication"),
-    ])
-)
+print("Processing ICD flags with DuckDB...")
+patient_cause_flags = pl.from_pandas(duckdb.sql(query).df())
+print(f"✓ Processed {len(patient_cause_flags)} patients")
+for col in ("icd10_ischemic", "icd10_cerebro", "icd10_external", "icd10_contraindication",
+            *[f"icd10_{k}" for k in comorbidity_prefixes]):
+    print(f"  {col}: {patient_cause_flags[col].sum()}")
 
 # Join flags to final_df on patient_id; fill null flags to False ----
+_comorbidity_fill = [pl.col(f"icd10_{k}").fill_null(False) for k in comorbidity_prefixes]
 final_cohort_df = (
     final_cohort_df
     .join(patient_cause_flags, on="patient_id", how="left")
@@ -621,6 +727,7 @@ final_cohort_df = (
         pl.col("icd10_cerebro").fill_null(False),
         pl.col("icd10_external").fill_null(False),
         pl.col("icd10_contraindication").fill_null(False),
+        *_comorbidity_fill,
     ])
 )
 
@@ -665,63 +772,86 @@ print(f"\nCALC flag qualified: {calc_qualified_n} patients")
 strobe_counts
 
 ################################################################################
-# IMV
+# IMV — streamed via DuckDB on clif_respiratory_support.parquet
 ################################################################################
 
 resp_filepath = f"{tables_path}/clif_respiratory_support.{file_type}"
-resp_df = read_data(
-      resp_filepath,
-      file_type,
-      filter_ids=all_decedent_inpatient_hosp_ids,
-      id_column='hospitalization_id'
-  )
+print("Processing IMV data with DuckDB...")
 
-# Step 2- On invasive mechanical ventilation at or within 48h of death.
-# Expired patients ever on IMV
-imv_expired = resp_df.filter(pl.col("device_category").str.to_lowercase() == "imv")
-# Select relevant columns from final_cohort_df
-final_cohort_for_join = final_cohort_df.select(["hospitalization_id", "patient_id", "encounter_block", "final_death_dttm"])
-imv_expired = final_cohort_for_join.join(imv_expired.select(["hospitalization_id", "recorded_dttm"]), 
-                                        on="hospitalization_id", how="inner")
+final_cohort_for_imv = final_cohort_df.select([
+    "hospitalization_id", "patient_id", "encounter_block", "final_death_dttm"
+]).to_pandas()
 
-del final_cohort_for_join
-gc.collect()
-resp_expired_latest_recorded_imv = (
-    imv_expired
-    .sort("recorded_dttm", descending=True)
-    .group_by("patient_id")
-    .agg(pl.all().first())
+imv_query = f"""
+WITH imv_data AS (
+    SELECT
+        hospitalization_id,
+        recorded_dttm,
+        device_category
+    FROM read_parquet('{resp_filepath}')
+    WHERE LOWER(device_category) = 'imv'
+        AND hospitalization_id IN (SELECT hospitalization_id FROM final_cohort_for_imv)
+),
+imv_with_death AS (
+    SELECT
+        i.hospitalization_id,
+        i.recorded_dttm,
+        f.patient_id,
+        f.encounter_block,
+        f.final_death_dttm,
+        EXTRACT(EPOCH FROM (f.final_death_dttm - i.recorded_dttm)) / 3600 AS hr_2death_last_imv
+    FROM imv_data i
+    INNER JOIN final_cohort_for_imv f ON i.hospitalization_id = f.hospitalization_id
+),
+-- Get latest IMV record per patient first, then apply the time window
+latest_imv_per_patient AS (
+    SELECT
+        patient_id,
+        hospitalization_id,
+        encounter_block,
+        final_death_dttm,
+        recorded_dttm,
+        hr_2death_last_imv,
+        ROW_NUMBER() OVER (
+            PARTITION BY patient_id
+            ORDER BY recorded_dttm DESC, hospitalization_id ASC
+        ) AS rn
+    FROM imv_with_death
 )
+SELECT
+    patient_id,
+    hospitalization_id,
+    encounter_block,
+    final_death_dttm,
+    recorded_dttm,
+    hr_2death_last_imv
+FROM latest_imv_per_patient
+WHERE rn = 1
+    AND hr_2death_last_imv <= 48
+    AND hr_2death_last_imv >= -24
+"""
 
-resp_expired_imv_hrs = resp_expired_latest_recorded_imv.with_columns(
-    (
-        (pl.col("final_death_dttm") - pl.col("recorded_dttm")).dt.total_seconds() / 3600
-    ).alias("hr_2death_last_imv")
-)
+resp_expired_cohort = pl.from_pandas(duckdb.sql(imv_query).df())
 
-# Filter to patients who were on IMV at death or before 48hrs of death 
-resp_expired_cohort = resp_expired_imv_hrs.filter(
-    (pl.col('hr_2death_last_imv') >= -24) & 
-    (pl.col('hr_2death_last_imv') <= 48)
-)
-
-imv_expired_patients = imv_expired["patient_id"].n_unique()
-imv_after_expire = resp_expired_imv_hrs.filter(pl.col('hr_2death_last_imv') <= 0)["patient_id"].n_unique()
-imv_48hr_expire = resp_expired_cohort["patient_id"].n_unique()
-strobe_counts["6_imv_48hr_expire"] = imv_48hr_expire
-strobe_counts["6_imv_after_expire"] = imv_after_expire
-strobe_counts["6_imv_expired_patients"] = imv_expired_patients
-
-# Add imv_48hr_expire flag to final_df: True if patient_id in resp_expired_cohort, else False
-imv_48hr_expire_patients = resp_expired_cohort.select(["patient_id"]).unique()
-imv_48hr_expire_patients = imv_48hr_expire_patients.with_columns(
+# Add imv_48hr_expire flag to final_cohort_df first (so we can apply the age
+# filter when counting). True if patient_id appears in resp_expired_cohort.
+imv_48hr_expire_patients = resp_expired_cohort.select(["patient_id"]).unique().with_columns(
     pl.lit(True).alias("imv_48hr_expire")
 )
-strobe_counts
-
 final_cohort_df = final_cohort_df.join(imv_48hr_expire_patients, on="patient_id", how="left")
+final_cohort_df = final_cohort_df.with_columns(pl.col("imv_48hr_expire").fill_null(False))
+
+# Materialize the canonical "Died_While_IMV" cohort flag = age <=75 AND IMV
+# within 48h before death. This is the same population shown as STROBE Stage 3
+# and used as the Table 1 "Died_While_IMV" column and the Table 2 denominator,
+# so all three stay consistent regardless of where the population gets read.
 final_cohort_df = final_cohort_df.with_columns(
-    pl.col("imv_48hr_expire").fill_null(False))
+    (pl.col("imv_48hr_expire") & pl.col("age_75_less")).alias("died_while_imv")
+)
+
+imv_48hr_expire = final_cohort_df.filter(pl.col("died_while_imv"))["patient_id"].n_unique()
+strobe_counts["6_imv_48hr_expire"] = imv_48hr_expire
+print(f"✓ Died while receiving IMV (age <=75 + IMV <=48h): {imv_48hr_expire}")
 
 ################################################################################
 # Organ quality check
@@ -733,196 +863,142 @@ final_cohort_df = final_cohort_df.with_columns(
 
 crrt_filepath = f"{tables_path}/clif_crrt_therapy.{file_type}"
 labs_filepath = f"{tables_path}/clif_labs.{file_type}"
-crrt_therapy = read_data(
-      crrt_filepath,
-      file_type,
-      filter_ids=all_decedent_inpatient_hosp_ids,
-      id_column='hospitalization_id'
-  )
-
-labs_df = read_data(
-      labs_filepath,
-      file_type,
-      filter_ids=all_decedent_inpatient_hosp_ids,
-      id_column='hospitalization_id'
-  )
-
-labs_df = apply_outlier_handling(labs_df, 'labs')
 
 # ============================================
-# Prepare final cohort with timing info
+# CRRT within 48h of death — streamed via DuckDB
 # ============================================
+print("Processing CRRT data with DuckDB...")
+final_cohort_for_crrt = final_cohort_df.select([
+    "hospitalization_id", "final_death_dttm"
+]).to_pandas()
+
+crrt_query = f"""
+WITH crrt_data AS (
+    SELECT
+        hospitalization_id,
+        recorded_dttm
+    FROM read_parquet('{crrt_filepath}')
+    WHERE hospitalization_id IN (SELECT hospitalization_id FROM final_cohort_for_crrt)
+),
+crrt_with_death AS (
+    SELECT
+        c.hospitalization_id,
+        c.recorded_dttm,
+        f.final_death_dttm,
+        EXTRACT(EPOCH FROM (f.final_death_dttm - c.recorded_dttm)) / 3600 AS hrs_before_death
+    FROM crrt_data c
+    INNER JOIN final_cohort_for_crrt f ON c.hospitalization_id = f.hospitalization_id
+    WHERE c.recorded_dttm <= f.final_death_dttm
+)
+SELECT DISTINCT hospitalization_id
+FROM crrt_with_death
+WHERE hrs_before_death <= 48 AND hrs_before_death >= 0
+"""
+
+crrt_48h_result = pl.from_pandas(duckdb.sql(crrt_query).df())
+on_crrt_flag = crrt_48h_result.with_columns(
+    pl.lit(True).alias('on_crrt_48h_before_death')
+)
+final_cohort_df = final_cohort_df.join(
+    on_crrt_flag, on='hospitalization_id', how='left'
+).with_columns(pl.col('on_crrt_48h_before_death').fill_null(False))
+
+on_crrt_n = final_cohort_df.filter(pl.col('on_crrt_48h_before_death'))['patient_id'].n_unique()
+print(f"✓ Patients on CRRT within 48h before death: {on_crrt_n}")
+
+# ============================================
+# Organ-quality labs (creatinine, bili, AST, ALT) — streamed via DuckDB
+# ============================================
+print("Processing Labs data with DuckDB...")
 final_cohort_for_labs = final_cohort_df.select([
-    "patient_id",
-    "hospitalization_id",
-    "final_death_dttm",
-])
+    "patient_id", "hospitalization_id", "final_death_dttm",
+]).to_pandas()
 
-# ============================================
-# Filter labs to those recorded BEFORE final_death_dttm
-# ============================================
-labs_before_last_vital = (
-    labs_df
-    .join(
-        final_cohort_for_labs,
-        on='hospitalization_id',
-        how='inner'
-    )
-    .filter(pl.col('lab_collect_dttm') <= pl.col('final_death_dttm'))
+labs_query = f"""
+WITH labs_data AS (
+    SELECT
+        hospitalization_id,
+        lab_collect_dttm,
+        lab_category,
+        lab_value_numeric
+    FROM read_parquet('{labs_filepath}')
+    WHERE hospitalization_id IN (SELECT hospitalization_id FROM final_cohort_for_labs)
+),
+labs_with_death AS (
+    SELECT
+        l.hospitalization_id,
+        l.lab_collect_dttm,
+        l.lab_category,
+        l.lab_value_numeric,
+        f.patient_id,
+        f.final_death_dttm
+    FROM labs_data l
+    INNER JOIN final_cohort_for_labs f ON l.hospitalization_id = f.hospitalization_id
+    WHERE l.lab_collect_dttm <= f.final_death_dttm
+),
+latest_creatinine AS (
+    SELECT
+        hospitalization_id,
+        lab_value_numeric AS creatinine_value,
+        lab_collect_dttm AS creatinine_dttm
+    FROM (
+        SELECT
+            hospitalization_id,
+            lab_value_numeric,
+            lab_collect_dttm,
+            ROW_NUMBER() OVER (PARTITION BY hospitalization_id ORDER BY lab_collect_dttm DESC) AS rn
+        FROM labs_with_death
+        WHERE lab_category = 'creatinine'
+    ) ranked
+    WHERE rn = 1
+),
+latest_liver AS (
+    SELECT
+        hospitalization_id,
+        MAX(CASE WHEN lab_category = 'bilirubin_total' THEN lab_value_numeric END) AS bilirubin_total_value,
+        MAX(CASE WHEN lab_category = 'bilirubin_total' THEN lab_collect_dttm END) AS bilirubin_total_dttm,
+        MAX(CASE WHEN lab_category = 'ast' THEN lab_value_numeric END) AS ast_value,
+        MAX(CASE WHEN lab_category = 'ast' THEN lab_collect_dttm END) AS ast_dttm,
+        MAX(CASE WHEN lab_category = 'alt' THEN lab_value_numeric END) AS alt_value,
+        MAX(CASE WHEN lab_category = 'alt' THEN lab_collect_dttm END) AS alt_dttm
+    FROM (
+        SELECT
+            hospitalization_id,
+            lab_category,
+            lab_value_numeric,
+            lab_collect_dttm,
+            ROW_NUMBER() OVER (PARTITION BY hospitalization_id, lab_category ORDER BY lab_collect_dttm DESC) AS rn
+        FROM labs_with_death
+        WHERE lab_category IN ('bilirubin_total', 'ast', 'alt')
+    ) ranked
+    WHERE rn = 1
+    GROUP BY hospitalization_id
 )
+SELECT DISTINCT
+    f.patient_id,
+    c.creatinine_value,
+    c.creatinine_dttm,
+    l.bilirubin_total_value,
+    l.bilirubin_total_dttm,
+    l.ast_value,
+    l.ast_dttm,
+    l.alt_value,
+    l.alt_dttm
+FROM final_cohort_for_labs f
+LEFT JOIN latest_creatinine c ON f.hospitalization_id = c.hospitalization_id
+LEFT JOIN latest_liver l ON f.hospitalization_id = l.hospitalization_id
+"""
 
-# ============================================
-# Get CREATININE - last value before last vital
-# ============================================
-creatinine_labs = labs_before_last_vital.filter(
-    pl.col('lab_category') == 'creatinine'
-)
-
-latest_creatinine = (
-    creatinine_labs
-    .sort('lab_collect_dttm')
-    .group_by('hospitalization_id')
-    .agg([
-        pl.col('lab_collect_dttm').last().alias('creatinine_dttm'),
-        pl.col('lab_value_numeric').last().alias('creatinine_value')
-    ])
-)
-
-# ============================================
-# Get LIVER LABS - last values before last vital
-# ============================================
-liver_labs_categories = labs_before_last_vital.filter(
-    pl.col('lab_category').is_in(['bilirubin_total', 'ast', 'alt'])
-)
-
-# Get values pivoted by category
-latest_liver_values = (
-    liver_labs_categories
-    .sort('lab_collect_dttm')
-    .group_by(['hospitalization_id', 'lab_category'])
-    .agg(pl.col('lab_value_numeric').last().alias('lab_value'))
-    .pivot(
-        values='lab_value',
-        index='hospitalization_id',
-        on='lab_category'
-    )
-    .rename({
-        'bilirubin_total': 'bilirubin_total_value',
-        'ast': 'ast_value',
-        'alt': 'alt_value'
-    })
-)
-
-# Get collection datetimes for each lab
-latest_liver_datetimes = (
-    liver_labs_categories
-    .sort('lab_collect_dttm')
-    .group_by(['hospitalization_id', 'lab_category'])
-    .agg(pl.col('lab_collect_dttm').last().alias('lab_dttm'))
-    .pivot(
-        values='lab_dttm',
-        index='hospitalization_id',
-        on='lab_category'
-    )
-    .rename({
-        'bilirubin_total': 'bilirubin_total_dttm',
-        'ast': 'ast_dttm',
-        'alt': 'alt_dttm'
-    })
-)
-
-# ============================================
-# Combine all lab values into one dataframe
-# ============================================
-organ_labs = (
-    final_cohort_for_labs
-    .join(latest_creatinine, on='hospitalization_id', how='left')
-    .join(latest_liver_values, on='hospitalization_id', how='left')
-    .join(latest_liver_datetimes, on='hospitalization_id', how='left')
-    .select([
-        'patient_id',
-        'creatinine_value',
-        'creatinine_dttm',
-        'bilirubin_total_value',
-        'bilirubin_total_dttm',
-        'ast_value',
-        'ast_dttm',
-        'alt_value',
-        'alt_dttm'
-    ])
-)
-
-# print(organ_labs.head())
-print(f"\nOrgan labs summary:")
+organ_labs = pl.from_pandas(duckdb.sql(labs_query).df())
+print(f"✓ Organ labs loaded: {len(organ_labs)} patients")
 print(f"  Patients with creatinine: {organ_labs.filter(pl.col('creatinine_value').is_not_null())['patient_id'].n_unique()}")
 print(f"  Patients with bilirubin: {organ_labs.filter(pl.col('bilirubin_total_value').is_not_null())['patient_id'].n_unique()}")
 print(f"  Patients with AST: {organ_labs.filter(pl.col('ast_value').is_not_null())['patient_id'].n_unique()}")
 print(f"  Patients with ALT: {organ_labs.filter(pl.col('alt_value').is_not_null())['patient_id'].n_unique()}")
 
-
-# ============================================
-# Check for CRRT within 48 hours before death
-# ============================================
-
-# Join CRRT with final cohort to get final_death_dttm
-crrt_with_death_time = (
-    crrt_therapy
-    .join(
-        final_cohort_df.select(['hospitalization_id', 'final_death_dttm']),
-        on='hospitalization_id',
-        how='inner'
-    )
-)
-
-# Filter to CRRT recorded before death
-crrt_before_death = crrt_with_death_time.filter(
-    pl.col('recorded_dttm') <= pl.col('final_death_dttm')
-)
-
-# Check if within 48 hours of death
-crrt_48h_before_death = (
-    crrt_before_death
-    .with_columns(
-        (
-            (pl.col('final_death_dttm') - pl.col('recorded_dttm')).dt.total_seconds() / 3600
-        ).alias('hrs_before_death')
-    )
-    .filter(
-        (pl.col('hrs_before_death') <= 48) & 
-        (pl.col('hrs_before_death') >= 0)
-    )
-)
-
-# Create flag: any CRRT within 48h of death
-on_crrt_flag = (
-    crrt_48h_before_death
-    .select('hospitalization_id')
-    .unique()
-    .with_columns(pl.lit(True).alias('on_crrt_48h_before_death'))
-)
-
-# Join flag to final_cohort_df
+# Join organ_labs onto final_cohort_df by patient_id
 final_cohort_df = final_cohort_df.join(
-    on_crrt_flag,
-    on='hospitalization_id',
-    how='left'
-)
-
-# Fill nulls with False
-final_cohort_df = final_cohort_df.with_columns(
-    pl.col('on_crrt_48h_before_death').fill_null(False)
-)
-
-# Count for tracking
-on_crrt_n = final_cohort_df.filter(pl.col('on_crrt_48h_before_death'))['patient_id'].n_unique()
-print(f"Patients on CRRT within 48h before death: {on_crrt_n}")
-
-# Join organ_labs with final_cohort_for_labs on patient_id
-final_cohort_df = final_cohort_df.join(
-    organ_labs, 
-    on='patient_id', 
-    how='left', 
-    suffix='_organlab'
+    organ_labs, on='patient_id', how='left', suffix='_organlab'
 )
 print(f"Final cohort with organ labs shape: {final_cohort_df.shape}")
 
@@ -986,95 +1062,70 @@ print(f"  Overall organ check pass: {organ_check_pass_n} patients")
 # Identify negative blood cultures and patients with no cultures in last 48h
 ################################################################################
 
-micro_culture_filepath = f"{tables_path}/clif_microbiology_culture.{file_type}"
-micro_culture = read_data(
-      micro_culture_filepath,
-      file_type,
-      filter_ids=all_decedent_inpatient_hosp_ids,
-      id_column='hospitalization_id'
-  )
+# Microbiology — streamed via DuckDB on clif_microbiology_culture.parquet
+print("Processing microbiology data with DuckDB...")
+final_cohort_for_micro = final_cohort_df.select([
+    'hospitalization_id', 'final_death_dttm'
+]).to_pandas()
 
-# Filter to blood cultures
-micro_culture_filtered = micro_culture.filter(
-    (pl.col("fluid_category").str.to_lowercase() == "blood_buffy") &
-    (pl.col("method_category").str.to_lowercase() == "culture")
+micro_query = f"""
+WITH blood_cultures AS (
+    SELECT
+        hospitalization_id,
+        collect_dttm,
+        organism_category
+    FROM read_parquet('{tables_path}/clif_microbiology_culture.{file_type}')
+    WHERE fluid_category = 'blood_buffy'
+        AND method_category = 'culture'
+        AND hospitalization_id IN (SELECT hospitalization_id FROM final_cohort_for_micro)
+),
+cultures_with_death AS (
+    SELECT
+        b.hospitalization_id,
+        b.collect_dttm,
+        b.organism_category,
+        f.final_death_dttm,
+        EXTRACT(EPOCH FROM (f.final_death_dttm - b.collect_dttm)) / 3600 AS hrs_before_death
+    FROM blood_cultures b
+    INNER JOIN final_cohort_for_micro f ON b.hospitalization_id = f.hospitalization_id
+    WHERE b.collect_dttm IS NOT NULL
+),
+cultures_48h AS (
+    SELECT
+        *,
+        CASE
+            WHEN LOWER(organism_category) LIKE '%no_growth%'
+                OR organism_category IS NULL
+                OR LOWER(organism_category) = ''
+            THEN true ELSE false
+        END AS is_negative_culture
+    FROM cultures_with_death
+    WHERE hrs_before_death >= 0 AND hrs_before_death <= 48
+),
+positive_cultures AS (
+    SELECT DISTINCT hospitalization_id
+    FROM cultures_48h
+    WHERE is_negative_culture = false
 )
+SELECT
+    f.hospitalization_id,
+    CASE WHEN p.hospitalization_id IS NULL THEN true ELSE false END AS no_positive_culture_48hrs
+FROM final_cohort_for_micro f
+LEFT JOIN positive_cultures p ON f.hospitalization_id = p.hospitalization_id
+"""
 
-# Join with final_cohort_df to get death time
-blood_cultures_with_death = (
-    final_cohort_df.select(['hospitalization_id', 'final_death_dttm'])
-    .join(
-        micro_culture_filtered.select(['hospitalization_id', 'collect_dttm', 'organism_category']),
-        on='hospitalization_id',
-        how='inner'
-    )
-)
-
-# Filter to cultures within 48 hours before death
-blood_cultures_48h = (
-    blood_cultures_with_death
-    .with_columns(
-        (
-            (pl.col('final_death_dttm') - pl.col('collect_dttm')).dt.total_seconds() / 3600
-        ).alias('hrs_before_death')
-    )
-    .filter(
-        (pl.col('collect_dttm').is_not_null()) &
-        (pl.col('hrs_before_death') <= 48) &
-        (pl.col('hrs_before_death') >= 0)
-    )
-)
-
-# Identify negative cultures (no_growth, null, empty)
-blood_cultures_48h = blood_cultures_48h.with_columns(
-    (
-        pl.col('organism_category').str.to_lowercase().str.contains('no_growth', literal=True) |
-        pl.col('organism_category').is_null() |
-        (pl.col('organism_category').str.to_lowercase() == '')
-    ).alias('is_negative_culture')
-)
-
-# Identify positive cultures
-positive_cultures_48h = blood_cultures_48h.filter(~pl.col('is_negative_culture'))
-
-# Get list of patients with positive cultures in last 48h
-patients_with_positive_cultures = set(
-    positive_cultures_48h.select('hospitalization_id').to_series().to_list()
-)
-
-# Create flag: no positive cultures if hospitalization_id NOT in positive cultures list
-no_positive_culture_flag = (
-    final_cohort_df.select('hospitalization_id')
-    .unique()
-    .with_columns(
-
-(~pl.col('hospitalization_id').is_in(patients_with_positive_cultures)).alias('no_positive_culture_48hrs')
-    )
-)
-
-# Join flag to final_cohort_df
+no_positive_culture_flag = pl.from_pandas(duckdb.sql(micro_query).df())
 final_cohort_df = final_cohort_df.join(
-    no_positive_culture_flag,
-    on='hospitalization_id',
-    how='left'
-)
+    no_positive_culture_flag, on='hospitalization_id', how='left'
+).with_columns(pl.col('no_positive_culture_48hrs').fill_null(False))
 
-# Fill any nulls with False (shouldn't be any, but just in case)
-final_cohort_df = final_cohort_df.with_columns(
-    pl.col('no_positive_culture_48hrs').fill_null(False)
-)
-
-# Count for STROBE tracking
+# STROBE tracking
 no_positive_culture_n = final_cohort_df.filter(pl.col('no_positive_culture_48hrs'))['patient_id'].n_unique()
 positive_culture_n = final_cohort_df.filter(~pl.col('no_positive_culture_48hrs'))['patient_id'].n_unique()
-
 strobe_counts["no_positive_culture_48hrs"] = no_positive_culture_n
 strobe_counts["positive_culture_48hrs"] = positive_culture_n
-
-print(f"\nBlood Culture Results:")
 print(f"  Patients with no positive cultures in last 48h: {no_positive_culture_n}")
 print(f"  Patients with positive cultures in last 48h: {positive_culture_n}")
-print(f"  Total negative/no_growth cultures:  {blood_cultures_48h.filter(pl.col('is_negative_culture')).shape[0]}")
 
 final_cohort_df.columns
 
@@ -1215,67 +1266,58 @@ print(f"  Both kidney AND liver eligible: {clif_both_eligible_n} ({clif_both_pct
 # Patient assessments
 ################################################################################
 
-patient_assessments_filepath = f"{tables_path}/clif_patient_assessments.{file_type}"
-patient_assessments_df = read_data(
-      patient_assessments_filepath,
-      file_type,
-      filter_ids=all_decedent_inpatient_hosp_ids,
-      id_column='hospitalization_id'
-  )
+# Patient assessments — streamed via DuckDB on clif_patient_assessments.parquet
+print("Processing patient assessments with DuckDB...")
+final_cohort_for_assessments = final_cohort_df.select([
+    "hospitalization_id", "final_death_dttm"
+]).to_pandas()
 
-# Find, for each hospital encounter, the closest GCS and RASS assessment to final_death_dttm
-# Lowercase assessment_category
-assessments_prepped = patient_assessments_df.with_columns(
-    pl.col("assessment_category").str.to_lowercase().alias("assessment_category")
+assessments_query = f"""
+WITH assessments_filtered AS (
+    SELECT
+        hospitalization_id,
+        recorded_dttm,
+        LOWER(assessment_category) AS assessment_category,
+        numerical_value
+    FROM read_parquet('{tables_path}/clif_patient_assessments.{file_type}')
+    WHERE LOWER(assessment_category) IN ('gcs_total', 'rass')
+        AND numerical_value IS NOT NULL
+        AND hospitalization_id IN (SELECT hospitalization_id FROM final_cohort_for_assessments)
+),
+with_death_time AS (
+    SELECT
+        a.hospitalization_id,
+        a.assessment_category,
+        a.numerical_value,
+        ABS(EXTRACT(EPOCH FROM (f.final_death_dttm - a.recorded_dttm))) AS abs_time_to_death
+    FROM assessments_filtered a
+    INNER JOIN final_cohort_for_assessments f ON a.hospitalization_id = f.hospitalization_id
+),
+closest_per_category AS (
+    SELECT
+        hospitalization_id,
+        assessment_category,
+        numerical_value,
+        ROW_NUMBER() OVER (
+            PARTITION BY hospitalization_id, assessment_category
+            ORDER BY abs_time_to_death
+        ) AS rn
+    FROM with_death_time
 )
+SELECT
+    hospitalization_id,
+    MAX(CASE WHEN assessment_category = 'gcs_total' THEN numerical_value END) AS gcs_total_value,
+    MAX(CASE WHEN assessment_category = 'rass'      THEN numerical_value END) AS rass_value
+FROM closest_per_category
+WHERE rn = 1
+GROUP BY hospitalization_id
+"""
 
-# Only keep GCS total and RASS, and where value is present
-relevant = assessments_prepped.filter(
-    (pl.col("assessment_category").is_in(["gcs_total", "rass"])) &
-    (pl.col("numerical_value").is_not_null())
-)
+patient_gcs_rass = pl.from_pandas(duckdb.sql(assessments_query).df())
+print(f"✓ Processed assessments for {len(patient_gcs_rass)} hospitalizations")
 
-# Add final_death_dttm from final_cohort_df
-relevant = relevant.join(
-    final_cohort_df.select(["hospitalization_id", "final_death_dttm"]),
-    on="hospitalization_id",
-    how="inner"
-)
-
-# Compute absolute time-to-death difference manually since .dt.abs() is not available
-relevant = relevant.with_columns(
-    (
-        (pl.col("final_death_dttm").cast(pl.Datetime) - pl.col("recorded_dttm").cast(pl.Datetime))
-            .dt.total_seconds()
-            .abs()
-            .alias("abs_time_to_death")
-    )
-)
-
-# Keep GCS and RASS, closest to death for each hospitalization_id
-closest = (
-    relevant
-    .sort(["hospitalization_id", "assessment_category", "abs_time_to_death"])
-    .group_by(["hospitalization_id", "assessment_category"])
-    .agg([
-        pl.col("numerical_value").first().alias("numerical_value"),
-        pl.col("recorded_dttm").first().alias("recorded_dttm"),
-        pl.col("abs_time_to_death").first()
-    ])
-)
-
-# Pivot to wide: GCS and RASS as columns (suffix '_value'), for each hospitalization_id
-patient_gcs_rass = closest.pivot(
-    index="hospitalization_id",
-    columns="assessment_category",
-    values="numerical_value"
-).rename({"gcs_total": "gcs_total_value", "rass": "rass_value"})
-
-# Join flag to final_cohort_df
 final_cohort_df = final_cohort_df.join(
-    patient_gcs_rass,
-    on='hospitalization_id',
-    how='left'
+    patient_gcs_rass, on='hospitalization_id', how='left'
 )
 
 # ================================================================================
@@ -1299,29 +1341,15 @@ if columns_to_drop:
 else:
     print("✓ No encounter-level identifiers found to drop")
 
-# Step 2: Now deduplicate to ensure one row per patient
-print("\nStep 2: Ensuring one row per patient...")
-n_patients_before = final_cohort_df['patient_id'].n_unique()
-n_rows_before = len(final_cohort_df)
-
-if n_patients_before != n_rows_before:
-    print(f"WARNING: {n_rows_before:,} rows but only {n_patients_before:,} unique patients!")
-    print("Deduplicating to ensure one row per patient...")
-
-    # Deduplicate keeping the last entry per patient (most recent data)
-    final_cohort_df = final_cohort_df.unique(subset=['patient_id'], keep='last')
-
-    n_rows_after = len(final_cohort_df)
-    print(f"✓ Deduplicated: {n_rows_before:,} rows → {n_rows_after:,} rows")
-    print(f"Removed {n_rows_before - n_rows_after:,} duplicate rows")
-else:
-    print(f"✓ Already unique: {n_patients_before:,} patients = {n_rows_before:,} rows")
-
-# Step 3: Final verification
+# Step 2: Sanity check — early dedup upstream means we should already be 1 row/patient.
+# If this assertion fails, a downstream join introduced duplicates (would need a fix).
 n_patients_final = final_cohort_df['patient_id'].n_unique()
 n_rows_final = len(final_cohort_df)
-assert n_patients_final == n_rows_final, \
-    f"CRITICAL: Still have duplicates! {n_rows_final} rows but {n_patients_final} unique patients"
+assert n_patients_final == n_rows_final, (
+    f"CRITICAL: Expected one row per patient (early dedup invariant violated). "
+    f"{n_rows_final} rows but {n_patients_final} unique patients."
+)
+print(f"✓ One-row-per-patient invariant holds: {n_patients_final:,} patients = {n_rows_final:,} rows")
 
 print(f"\n✓ Final verification passed: {n_patients_final:,} unique patients")
 print(f"Final cohort shape: {final_cohort_df.shape}")
@@ -1331,11 +1359,17 @@ final_cohort_df.write_parquet(str(OUTPUT_INTERMEDIATE_DIR / "final_cohort_df.par
 pd.DataFrame([strobe_counts]).to_csv(str(OUTPUT_FINAL_DIR / "strobe_counts.csv"), index=False)
 
 ################################################################################
-# Table One
+# Table One (Overall / Died-while-IMV / CALC / CLIF) + NIDDK Aim 1 Table 2
+# (PDF 1: stratified by terminal serum creatinine)
 ################################################################################
 
-from utils.table_one import create_table_one
+from utils.table_one import create_table_one, create_table_two_by_terminal_cr
 table_one = create_table_one(final_cohort_df, output_dir=str(OUTPUT_FINAL_DIR))
+table_two = create_table_two_by_terminal_cr(
+    final_cohort_df,
+    output_dir=str(OUTPUT_FINAL_DIR),
+    cohort_filter_column='died_while_imv',
+)
 
 ################################################################################
 # Visualizations

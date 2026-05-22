@@ -35,14 +35,28 @@ def create_table_one(final_cohort_df: pl.DataFrame, output_dir: str = 'output') 
     # ============================================
     # Define cohorts
     # ============================================
+    # NIDDK Aim 1 (PDF 1) "Died_While_IMV" stratum uses the upstream
+    # `died_while_imv` flag = age <=75 AND IMV <=48 h before death.
+    # This is the same flag the main script registers in strobe_counts and
+    # uses as the Table 2 denominator, so all three stay in lockstep.
+    # Fall back to recomputing on-the-fly if older runs lack the column.
     cohort_overall = final_cohort_df
+    if 'died_while_imv' in final_cohort_df.columns:
+        cohort_died_imv = final_cohort_df.filter(pl.col('died_while_imv'))
+    elif 'imv_48hr_expire' in final_cohort_df.columns and 'age_75_less' in final_cohort_df.columns:
+        cohort_died_imv = final_cohort_df.filter(
+            pl.col('imv_48hr_expire') & pl.col('age_75_less')
+        )
+    else:
+        cohort_died_imv = final_cohort_df.head(0)
     cohort_calc = final_cohort_df.filter(pl.col('calc_flag'))
     cohort_clif = final_cohort_df.filter(pl.col('clif_eligible_donors'))
 
     cohorts = {
         'Overall': cohort_overall,
-        'CALC Donors': cohort_calc,
-        'CLIF Donors': cohort_clif
+        'Died_While_IMV': cohort_died_imv,
+        'CALC_Donors': cohort_calc,
+        'CLIF_Donors': cohort_clif,
     }
 
     # Get cohort sizes for display
@@ -59,6 +73,11 @@ def create_table_one(final_cohort_df: pl.DataFrame, output_dir: str = 'output') 
         'ethnicity_category',
         'sex_category',
         'first_admission_location',
+        # Comorbidities (NIDDK Aim 1 PDF 1 — extracted from hospital_diagnosis)
+        'icd10_hcv',
+        'icd10_htn',
+        'icd10_dm',
+        'icd10_cva',
         # Combined organ eligibility criteria
         'kidney_eligible',  # Cr <4 AND not on CRRT
         'liver_eligible',   # Bili <4 AND AST <700 AND ALT <700
@@ -93,23 +112,16 @@ def create_table_one(final_cohort_df: pl.DataFrame, output_dir: str = 'output') 
     # ============================================
     summary_data = []
 
-    # Unique patients and encounters
+    # Unique patients and encounters — emit a column per cohort dynamically
     summary_data.append({
         'Variable': 'Unique Patients',
         'Category': '',
-        'Overall': cohort_overall['patient_id'].n_unique(),
-        'CALC_Donors': cohort_calc['patient_id'].n_unique(),
-        'CLIF_Donors': cohort_clif['patient_id'].n_unique()
+        **{name: df['patient_id'].n_unique() for name, df in cohorts.items()},
     })
-
-    # After patient-level deduplication, encounters should equal patients
-    # but we include this for verification
     summary_data.append({
         'Variable': 'Unique Encounters',
         'Category': '',
-        'Overall': len(cohort_overall),  # Should equal unique patients after deduplication
-        'CALC_Donors': len(cohort_calc),
-        'CLIF_Donors': len(cohort_clif)
+        **{name: len(df) for name, df in cohorts.items()},
     })
 
     # Data collection period (min-max years from admission_dttm)
@@ -139,9 +151,7 @@ def create_table_one(final_cohort_df: pl.DataFrame, output_dir: str = 'output') 
     summary_data.append({
         'Variable': 'Data Collection Period',
         'Category': '',
-        'Overall': year_ranges.get('Overall', 'N/A'),
-        'CALC_Donors': year_ranges.get('CALC Donors', 'N/A'),
-        'CLIF_Donors': year_ranges.get('CLIF Donors', 'N/A')
+        **{name: year_ranges.get(name, 'N/A') for name in cohorts},
     })
 
     # Debug print to verify it was added
@@ -149,6 +159,11 @@ def create_table_one(final_cohort_df: pl.DataFrame, output_dir: str = 'output') 
 
     # Custom labels for boolean/threshold variables
     custom_labels = {
+        # Comorbidities (from hospital_diagnosis ICD-10 prefix match)
+        'icd10_hcv': 'HCV infection',
+        'icd10_htn': 'Hypertension',
+        'icd10_dm': 'Diabetes',
+        'icd10_cva': 'Hx CVA',
         # Combined eligibility
         'kidney_eligible': 'Kidney Eligible (Cr <4 AND not on CRRT)',
         'liver_eligible': 'Liver Eligible (Bili <4 AND AST <700 AND ALT <700)',
@@ -209,16 +224,19 @@ def create_table_one(final_cohort_df: pl.DataFrame, output_dir: str = 'output') 
 
     # ============================================
     # Numerical variables
+    # Each variable produces a Median (IQR) row and an N valid row.
+    # Variables in MEAN_SD_VARS additionally produce a Mean (SD) row (PDF 1
+    # spec asks for mean+/-SD for Age — we report both for transparency).
     # ============================================
+    MEAN_SD_VARS = {'age_at_death'}
+
     for var_name in numerical_vars:
         var_label = var_name.replace('_', ' ').title()
 
         # Median (IQR) row
         row_median = {'Variable': var_label, 'Category': 'Median (IQR)'}
-
         for cohort_name, cohort_df in cohorts.items():
             values = cohort_df.select(var_name).to_series().drop_nulls()
-
             if len(values) > 0:
                 median = float(values.median())
                 q1 = float(values.quantile(0.25))
@@ -226,12 +244,23 @@ def create_table_one(final_cohort_df: pl.DataFrame, output_dir: str = 'output') 
                 row_median[cohort_name.replace(' ', '_')] = f"{median:.1f} ({q1:.1f}-{q3:.1f})"
             else:
                 row_median[cohort_name.replace(' ', '_')] = "N/A"
-
         summary_data.append(row_median)
+
+        # Mean (SD) row — only for variables in MEAN_SD_VARS
+        if var_name in MEAN_SD_VARS:
+            row_mean = {'Variable': var_label, 'Category': 'Mean (SD)'}
+            for cohort_name, cohort_df in cohorts.items():
+                values = cohort_df.select(var_name).to_series().drop_nulls()
+                if len(values) > 0:
+                    mean = float(values.mean())
+                    sd = float(values.std())
+                    row_mean[cohort_name.replace(' ', '_')] = f"{mean:.1f} ({sd:.1f})"
+                else:
+                    row_mean[cohort_name.replace(' ', '_')] = "N/A"
+            summary_data.append(row_mean)
 
         # N valid (missing) row
         row_missing = {'Variable': var_label, 'Category': 'N valid (% available)'}
-
         for cohort_name, cohort_df in cohorts.items():
             values = cohort_df.select(var_name).to_series().drop_nulls()
             n_total = cohort_df.shape[0]
@@ -239,7 +268,6 @@ def create_table_one(final_cohort_df: pl.DataFrame, output_dir: str = 'output') 
             pct_valid = (n_valid / n_total * 100) if n_total > 0 else 0
             n_missing = n_total - n_valid
             row_missing[cohort_name.replace(' ', '_')] = f"{n_valid} ({pct_valid:.1f}%), {n_missing} missing"
-
         summary_data.append(row_missing)
 
     # ============================================
@@ -332,3 +360,130 @@ def create_table_one(final_cohort_df: pl.DataFrame, output_dir: str = 'output') 
     print("="*160 + "\n")
 
     return table_one_df
+
+
+# ==========================================================================
+# NIDDK Aim 1 (PDF 1) Table 2: stratified by terminal serum creatinine
+# ==========================================================================
+
+def create_table_two_by_terminal_cr(
+    final_cohort_df: pl.DataFrame,
+    output_dir: str = 'output',
+    cohort_filter_column: str = 'imv_48hr_expire',
+) -> pl.DataFrame:
+    """Build PDF 1's Table 2 — patient characteristics stratified by terminal
+    serum creatinine (<2 mg/dL vs ≥2 mg/dL).
+
+    Default population is the "Died while receiving IMV" cohort (age ≤75
+    inpatient decedents who were on IMV in the relevant 48 h window). Pass a
+    different boolean column name via cohort_filter_column to restrict to,
+    e.g., 'clif_eligible_donors' or 'calc_flag'.
+    """
+    output_path = Path(output_dir)
+    output_path.mkdir(parents=True, exist_ok=True)
+
+    # Restrict to the chosen denominator
+    if cohort_filter_column and cohort_filter_column in final_cohort_df.columns:
+        pop = final_cohort_df.filter(pl.col(cohort_filter_column))
+    else:
+        pop = final_cohort_df
+
+    # Split by terminal Cr; track the "missing creatinine" group explicitly
+    # so denominators add up: <2 + >=2 + Missing = population N
+    pop_cr_low = pop.filter(pl.col('creatinine_value') < 2)
+    pop_cr_high = pop.filter(pl.col('creatinine_value') >= 2)
+    pop_cr_missing = pop.filter(pl.col('creatinine_value').is_null())
+    strata = {
+        '<2_mg_dL': pop_cr_low,
+        '>=2_mg_dL': pop_cr_high,
+        'missing_Cr': pop_cr_missing,
+    }
+
+    # PDF 1 Table 2 row spec — (variable_name, label, kind)
+    # kind: 'n_pct_true' for boolean flags, 'median_iqr' for continuous,
+    #       'n_pct_male' for sex (count of Male only), 'n_total' for N row.
+    binary_yes_n = lambda series: (
+        series.filter(pl.col(series.name) == True).shape[0]
+        if False else None  # placeholder; we compute inline below
+    )
+    rows: list[dict] = []
+
+    def fmt_n_pct(n: int, denom: int) -> str:
+        return f"{n} ({n/denom*100:.1f}%)" if denom else '—'
+
+    def fmt_median_iqr(series_name: str, df: pl.DataFrame) -> str:
+        s = df.select(series_name).to_series().drop_nulls()
+        if len(s) == 0:
+            return '—'
+        return f"{float(s.median()):.1f} ({float(s.quantile(0.25)):.1f}–{float(s.quantile(0.75)):.1f})"
+
+    # N row
+    rows.append({
+        'Variable': 'N patients',
+        **{name: str(len(df)) for name, df in strata.items()},
+    })
+
+    # Age: mean (SD) per PDF spec
+    age_row = {'Variable': 'Age, mean (SD)'}
+    for name, df in strata.items():
+        s = df.select('age_at_death').to_series().drop_nulls()
+        if len(s) > 0:
+            age_row[name] = f"{float(s.mean()):.1f} ({float(s.std()):.1f})"
+        else:
+            age_row[name] = '—'
+    rows.append(age_row)
+
+    # Male sex
+    male_row = {'Variable': 'Male sex, n (%)'}
+    for name, df in strata.items():
+        n_male = df.filter(
+            pl.col('sex_category').cast(pl.Utf8).str.to_lowercase() == 'male'
+        ).shape[0]
+        male_row[name] = fmt_n_pct(n_male, len(df))
+    rows.append(male_row)
+
+    # Height / Weight / Terminal Cr / ICU LOS — median (IQR)
+    cont_specs = [
+        ('Height (cm), median (IQR)', 'last_height_cm'),
+        ('Weight (kg), median (IQR)', 'last_weight_kg'),
+        ('Terminal creatinine (mg/dL), median (IQR)', 'creatinine_value'),
+        ('ICU LOS (days), median (IQR)', 'first_icu_los_days'),
+    ]
+    for label, colname in cont_specs:
+        if colname not in pop.columns:
+            continue
+        rows.append({
+            'Variable': label,
+            **{name: fmt_median_iqr(colname, df) for name, df in strata.items()},
+        })
+
+    # Comorbidity flags (HCV, HTN, DM, Hx CVA)
+    comorbidity_specs = [
+        ('HCV infection, n (%)', 'icd10_hcv'),
+        ('Hypertension, n (%)', 'icd10_htn'),
+        ('Diabetes, n (%)', 'icd10_dm'),
+        ('Hx CVA, n (%)', 'icd10_cva'),
+    ]
+    for label, colname in comorbidity_specs:
+        if colname not in pop.columns:
+            continue
+        row = {'Variable': label}
+        for name, df in strata.items():
+            n = df.filter(pl.col(colname) == True).shape[0]
+            row[name] = fmt_n_pct(n, len(df))
+        rows.append(row)
+
+    # Note about HgbA1c being skipped
+    rows.append({'Variable': 'HgbA1c', **{n: '— (not in CLIF schema)' for n in strata}})
+
+    table = pl.DataFrame(rows)
+    pdf_path_csv = output_path / 'aim1_table_two_by_terminal_cr.csv'
+    table.write_csv(pdf_path_csv)
+    print(f"✓ Saved Aim 1 Table 2 (by terminal Cr) to {pdf_path_csv}")
+
+    print("\n" + "=" * 100)
+    print(f"AIM 1 TABLE 2: Stratified by terminal creatinine  |  population: {cohort_filter_column}")
+    print("=" * 100)
+    print(table.to_pandas().to_string(index=False))
+    print("=" * 100 + "\n")
+    return table
