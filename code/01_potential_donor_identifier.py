@@ -588,39 +588,29 @@ strobe_counts
 ################################################################################
 
 hospial_dx_filepath = f"{tables_path}/clif_hospital_diagnosis.{file_type}"
-hospital_dx = read_data(
-    hospial_dx_filepath,
-    file_type,
-    filter_ids=all_decedent_inpatient_hosp_ids,
-    id_column='hospitalization_id'
-)
 
-# Join on hospitalization_id to add patient_id from final_cohort_df to hospital_dx
-hospital_dx = (
-    hospital_dx.join(
-        final_cohort_df.select(['hospitalization_id', 'patient_id']),
-        on='hospitalization_id',
-        how='left'
-    )
-)
+# Diagnostic counts via DuckDB (streamed; previously a polars read+join that
+# segfaulted on Windows at sites with large hospital_diagnosis tables).
+all_ids_df = pd.DataFrame({"hospitalization_id": list(all_decedent_inpatient_hosp_ids)})
+age_relevant_ids_df = age_relevant_cohort.select("patient_id").unique().to_pandas()
 
-# Show how many hosp ids from all_decedent_inpatient_hosp_ids are present in hospital_dx
-present_hosp_ids = set(hospital_dx['hospitalization_id'].unique())
-requested_hosp_ids = set(all_decedent_inpatient_hosp_ids)
-n_present = len(present_hosp_ids & requested_hosp_ids)
-n_requested = len(requested_hosp_ids)
-print(f"Hospitalization IDs present in hospital_dx: {n_present} out of {n_requested}")
-
-# Add these counts to strobe_counts
+n_present = duckdb.sql(f"""
+    SELECT COUNT(DISTINCT hospitalization_id)
+    FROM read_parquet('{hospial_dx_filepath}')
+    WHERE hospitalization_id IN (SELECT hospitalization_id FROM all_ids_df)
+""").fetchone()[0]
+print(f"Hospitalization IDs present in hospital_dx: {n_present} out of "
+      f"{len(all_decedent_inpatient_hosp_ids)}")
 strobe_counts["5_present_inpatient_hospitalization_ids_in_hospital_dx"] = n_present
 
-# Add count: how many age_relevant_cohort patients are present in hospital_dx
-age_relevant_patient_ids = set(age_relevant_cohort['patient_id'].unique())
-hospital_dx_patient_ids = set(hospital_dx['patient_id'].unique())
-n_age_relevant_in_hospital_dx = len(age_relevant_patient_ids & hospital_dx_patient_ids)
-strobe_counts["5_age_relevant_in_hospital_dx"] = n_age_relevant_in_hospital_dx
-
-strobe_counts
+n_age_relevant = duckdb.sql(f"""
+    SELECT COUNT(DISTINCT hosp.patient_id)
+    FROM read_parquet('{hospial_dx_filepath}') hd
+    JOIN hospitalization_df hosp ON hd.hospitalization_id = hosp.hospitalization_id
+    WHERE hd.hospitalization_id IN (SELECT hospitalization_id FROM all_ids_df)
+      AND hosp.patient_id     IN (SELECT patient_id      FROM age_relevant_ids_df)
+""").fetchone()[0]
+strobe_counts["5_age_relevant_in_hospital_dx"] = n_age_relevant
 
 # ---- 0) Load contraindications list from CSV ----
 contraindications_df = pl.read_csv(str(UTILS_DIR / "icd10_contraindications.csv"))
@@ -653,10 +643,7 @@ print(f"Loaded comorbidity prefixes: " +
       ", ".join(f"{k}={len(v)}" for k, v in comorbidity_prefixes.items()))
 
 # ---- 1) Compute ICD-10 cause + comorbidity flags via DuckDB SQL ----
-# DuckDB streams the parquet file rather than loading all of hospital_diagnosis
-# into RAM, so this works at sites with very large diagnosis tables.
-# Bind helper dataframes into DuckDB's local scope (referenced by name in SQL):
-all_ids_df = pd.DataFrame({"hospitalization_id": list(all_decedent_inpatient_hosp_ids)})
+# (all_ids_df is already bound above for the diagnostic queries.)
 contraindication_codes_df = pd.DataFrame({"code": contraindication_codes})
 
 # Build SQL clauses for each comorbidity (HCV/HTN/DM/CVA) — prefix LIKE chain

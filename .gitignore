@@ -29,3 +29,6 @@ references/
 # ai files
 .claude
 output/
+shared/
+r01_all_site_data/
+.Rproj.user
