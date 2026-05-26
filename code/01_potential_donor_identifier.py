@@ -498,7 +498,11 @@ first_icu_in = (
     .agg(pl.col("in_dttm").min().alias("first_icu_in_dttm"))
 )
 
-# Join back to get corresponding out_dttm for the first ICU in_dttm
+# Join back to get corresponding out_dttm for the first ICU in_dttm.
+# Some sites (e.g. NU) log >1 ADT-ICU row at the same first in_dttm with
+# different out_dttm (overlapping unit transfers recorded simultaneously).
+# Collapse to one row per encounter_block, keeping the latest out_dttm so
+# first_icu_los_days reflects the longest stay starting at that moment.
 icu_summary = (
     first_icu_in.join(
         icu_df.select(["encounter_block", "in_dttm", "out_dttm"]),
@@ -506,10 +510,15 @@ icu_summary = (
         right_on=["encounter_block", "in_dttm"],
         how="left"
     )
-    .with_columns([
-        pl.col("out_dttm").alias("first_icu_out_dttm"),
-        ((pl.col("out_dttm") - pl.col("first_icu_in_dttm")).dt.total_seconds() / (3600*24)).alias("first_icu_los_days")
+    .group_by("encounter_block")
+    .agg([
+        pl.col("first_icu_in_dttm").first(),
+        pl.col("out_dttm").max().alias("first_icu_out_dttm"),
     ])
+    .with_columns(
+        ((pl.col("first_icu_out_dttm") - pl.col("first_icu_in_dttm")).dt.total_seconds() / (3600*24))
+        .alias("first_icu_los_days")
+    )
     .select([
         "encounter_block", "first_icu_in_dttm", "first_icu_out_dttm", "first_icu_los_days"
     ])
