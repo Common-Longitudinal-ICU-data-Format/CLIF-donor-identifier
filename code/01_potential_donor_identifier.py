@@ -312,42 +312,85 @@ strobe_counts
 ################################################################################
 
 vitals_filepath = f"{tables_path}/clif_vitals.{file_type}"
-vitals_df = read_data(
-      vitals_filepath,
-      file_type,
-      filter_ids=all_decedent_hosp_ids,
-      id_column='hospitalization_id'
-  )
 
-vitals_df = apply_outlier_handling(vitals_df, 'vitals')
-
-# First, sort by recorded_dttm within each hospitalization_id
-vitals_df = (
-    vitals_df
-    .sort(['hospitalization_id', 'recorded_dttm'])
+# Stream clif_vitals via DuckDB instead of loading into polars. Sites with
+# very large vitals tables (e.g., JHU at >2 GB) were getting OOM-killed
+# inside the polars `with_columns` outlier-handler chain. We only consume
+# four fields downstream (first/last vital timestamps + last weight_kg +
+# last height_cm), so a streamed SQL query is both faster and bounded in RAM.
+# Outlier ranges (weight 30-1100 kg, height 76-255 cm) are applied inline
+# via CASE WHEN, matching utils/outlier_handler.py + config/outlier_config.yaml.
+all_decedent_hosp_ids_df = pd.DataFrame(
+    {"hospitalization_id": list(all_decedent_hosp_ids)}
 )
 
-# Get first and last recorded_dttm, plus last weight and height for each hospitalization
-vitals_first_last = (
-    vitals_df
-    .group_by('hospitalization_id')
-    .agg([
-        pl.col('recorded_dttm').min().alias('first_recorded_vital_dttm'),
-        pl.col('recorded_dttm').max().alias('last_recorded_vital_dttm'),
+vitals_query = f"""
+WITH vitals_cohort AS (
+    SELECT hospitalization_id, recorded_dttm, vital_category, vital_value
+    FROM read_parquet('{vitals_filepath}')
+    WHERE hospitalization_id IN (
+        SELECT hospitalization_id FROM all_decedent_hosp_ids_df
+    )
+),
+time_bounds AS (
+    SELECT
+        hospitalization_id,
+        MIN(recorded_dttm) AS first_recorded_vital_dttm,
+        MAX(recorded_dttm) AS last_recorded_vital_dttm
+    FROM vitals_cohort
+    GROUP BY hospitalization_id
+),
+weight_ranked AS (
+    SELECT
+        hospitalization_id,
+        CASE WHEN vital_value BETWEEN 30 AND 1100 THEN vital_value END AS vital_value,
+        ROW_NUMBER() OVER (
+            PARTITION BY hospitalization_id ORDER BY recorded_dttm DESC
+        ) AS rn
+    FROM vitals_cohort
+    WHERE vital_category = 'weight_kg'
+),
+height_ranked AS (
+    SELECT
+        hospitalization_id,
+        CASE WHEN vital_value BETWEEN 76 AND 255 THEN vital_value END AS vital_value,
+        ROW_NUMBER() OVER (
+            PARTITION BY hospitalization_id ORDER BY recorded_dttm DESC
+        ) AS rn
+    FROM vitals_cohort
+    WHERE vital_category = 'height_cm'
+)
+SELECT
+    t.hospitalization_id,
+    t.first_recorded_vital_dttm,
+    t.last_recorded_vital_dttm,
+    w.vital_value AS last_weight_kg,
+    h.vital_value AS last_height_cm
+FROM time_bounds t
+LEFT JOIN weight_ranked w
+    ON t.hospitalization_id = w.hospitalization_id AND w.rn = 1
+LEFT JOIN height_ranked h
+    ON t.hospitalization_id = h.hospitalization_id AND h.rn = 1
+"""
 
-        # Get last recorded weight
-        pl.col('vital_value')
-            .filter(pl.col('vital_category') == 'weight_kg')
-            .last()
-            .alias('last_weight_kg'),
-
-        # Get last recorded height
-        pl.col('vital_value')
-            .filter(pl.col('vital_category') == 'height_cm')
-            .last()
-            .alias('last_height_cm')
+print("Processing vitals data with DuckDB...")
+vitals_first_last = pl.from_pandas(duckdb.sql(vitals_query).df())
+# DuckDB returns UTC; match the canonical IANA TZ that clifpy uses on the
+# rest of final_df (config['timezone'] may be a legacy alias like "US/Central"
+# that polars treats as a different dtype than "America/Chicago", so detect
+# the actual TZ from an existing column).
+_dt_dtype = next(
+    (dt for col, dt in final_df.schema.items()
+     if isinstance(dt, pl.Datetime) and dt.time_zone is not None),
+    None,
+)
+if _dt_dtype is not None:
+    _site_tz = _dt_dtype.time_zone
+    vitals_first_last = vitals_first_last.with_columns([
+        pl.col('first_recorded_vital_dttm').dt.convert_time_zone(_site_tz),
+        pl.col('last_recorded_vital_dttm').dt.convert_time_zone(_site_tz),
     ])
-)
+print(f"✓ Processed vitals for {len(vitals_first_last)} hospitalizations")
 
 # Calculate BMI
 vitals_first_last = vitals_first_last.with_columns(
