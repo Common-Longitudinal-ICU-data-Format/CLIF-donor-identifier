@@ -10,6 +10,7 @@ Reads:   output/intermediate/final_cohort_df.parquet
 Writes:  output/final/table_one.csv
          output/final/table_one.html
          output/final/aim1_table_two_by_terminal_cr.csv
+         output/final/regenerate_log.txt   (stdout mirror of this run)
 
 Run from the repo root:
     uv run python code/regenerate_tables.py
@@ -17,6 +18,8 @@ Run from the repo root:
 
 from __future__ import annotations
 
+import atexit
+import datetime as _dt
 import sys
 from pathlib import Path
 
@@ -30,7 +33,39 @@ INTERMEDIATE = PROJECT_ROOT / "output" / "intermediate" / "final_cohort_df.parqu
 OUT_DIR      = PROJECT_ROOT / "output" / "final"
 
 
+class _Tee:
+    """Write to multiple streams simultaneously (terminal + log file)."""
+    def __init__(self, *streams):
+        self._streams = streams
+    def write(self, msg):
+        for s in self._streams:
+            try:
+                s.write(msg); s.flush()
+            except Exception:
+                pass
+    def flush(self):
+        for s in self._streams:
+            try: s.flush()
+            except Exception: pass
+
+
+def _start_logging() -> Path:
+    """Tee stdout to output/final/regenerate_log.txt for this run.
+    Uses a distinct filename so the main pipeline's run_log.txt is preserved.
+    """
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    log_path = OUT_DIR / "regenerate_log.txt"
+    handle = open(log_path, "w", encoding="utf-8")
+    sys.stdout = _Tee(sys.__stdout__, handle)
+    atexit.register(lambda: (handle.flush(), handle.close()))
+    print(f"=== regenerate_tables.py started {_dt.datetime.now():%Y-%m-%d %H:%M:%S} ===")
+    print(f"Logging stdout to: {log_path}")
+    print("-" * 80)
+    return log_path
+
+
 def main() -> None:
+    _start_logging()
     if not INTERMEDIATE.exists():
         sys.exit(
             f"ERROR: {INTERMEDIATE} not found. Run the full pipeline "
