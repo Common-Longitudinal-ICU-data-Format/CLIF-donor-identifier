@@ -98,6 +98,8 @@ def create_table_one(final_cohort_df: pl.DataFrame, output_dir: str = 'output') 
         'age_at_death',
         'hospital_length_of_stay_days',
         'first_icu_los_days',
+        'last_height_cm',
+        'last_weight_kg',
         'bmi',
         'creatinine_value',
         'bilirubin_total_value',
@@ -106,6 +108,13 @@ def create_table_one(final_cohort_df: pl.DataFrame, output_dir: str = 'output') 
         'rass_value',
         'gcs_total_value'
     ]
+
+    # Override the default Title Case label for variables that need a
+    # specific human-readable name (units, capitalization).
+    NUMERICAL_LABELS = {
+        'last_height_cm': 'Height (cm)',
+        'last_weight_kg': 'Weight (kg)',
+    }
 
     # ============================================
     # Build Table 1 data
@@ -231,7 +240,7 @@ def create_table_one(final_cohort_df: pl.DataFrame, output_dir: str = 'output') 
     MEAN_SD_VARS = {'age_at_death'}
 
     for var_name in numerical_vars:
-        var_label = var_name.replace('_', ' ').title()
+        var_label = NUMERICAL_LABELS.get(var_name, var_name.replace('_', ' ').title())
 
         # Median (IQR) row
         row_median = {'Variable': var_label, 'Category': 'Median (IQR)'}
