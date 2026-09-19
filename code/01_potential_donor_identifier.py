@@ -28,6 +28,7 @@ import duckdb
 import polars as pl
 import matplotlib.pyplot as plt
 import pandas as pd
+import yaml
 from utils.config import config
 from utils.io import read_data
 from utils.strobe_diagram import create_consort_diagram
@@ -48,9 +49,12 @@ print(f"File Type: {file_type}")
 from pathlib import Path
 PROJECT_ROOT = Path(config['project_root'])
 UTILS_DIR = PROJECT_ROOT / "utils"
+# PHI split per the CLIF project template: intermediate_phi never leaves the
+# site; final_no_phi holds aggregate, shareable output. Per-site subfolders so
+# three sites can be run on one machine without clobbering each other.
 OUTPUT_DIR = PROJECT_ROOT / "output"
-OUTPUT_FINAL_DIR = OUTPUT_DIR / "final"
-OUTPUT_INTERMEDIATE_DIR = OUTPUT_DIR / "intermediate"
+OUTPUT_FINAL_DIR = Path(config["output_final"])
+OUTPUT_INTERMEDIATE_DIR = Path(config["output_intermediate"])
 OUTPUT_FINAL_DIR.mkdir(parents=True, exist_ok=True)
 OUTPUT_INTERMEDIATE_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -594,12 +598,42 @@ final_cohort_df = final_cohort_df.join(
 #         pl.col('birth_date').str.to_datetime().alias('birth_date')
 #     )
 
-# Calculate age at death as (discharge_dttm - birth_date) in years (using .dt.total_days()/365.25)
-final_cohort_df = final_cohort_df.with_columns(
-    (
-        (pl.col('final_death_dttm') - pl.col('birth_date')).dt.total_days() / 365.25
-    ).alias('age_at_death')
+# Age at death = (final_death_dttm - birth_date) in years.
+#
+# DE-IDENTIFIED SITES. Some sites ship extracts with birth_date fully redacted
+# (RUSH: 0 of 138,070 populated). There, age_at_death is null for everyone, the
+# age filter drops the entire cohort, and the site silently reports zero
+# eligible donors. We therefore fall back to hospitalization.age_at_admission,
+# which such extracts do populate.
+#
+# The fallback is age at ADMISSION, not at death, so it understates age by the
+# length of stay. For decedents that is typically days, and it can only make a
+# patient look younger -- i.e. it can only over-include at the <=75 boundary,
+# never under-include. HIPAA caps age_at_admission at 89, which is well above
+# the 75 threshold and so does not affect the flag. The substitution is
+# recorded in strobe_counts and must be reported as a site-level deviation.
+_age_from_birth = (
+    (pl.col('final_death_dttm') - pl.col('birth_date')).dt.total_days() / 365.25
 )
+_has_birth_date = (
+    'birth_date' in final_cohort_df.columns
+    and final_cohort_df['birth_date'].null_count() < final_cohort_df.height
+)
+if _has_birth_date:
+    final_cohort_df = final_cohort_df.with_columns(_age_from_birth.alias('age_at_death'))
+    _age_source = 'birth_date'
+elif 'age_at_admission' in final_cohort_df.columns:
+    final_cohort_df = final_cohort_df.with_columns(
+        pl.col('age_at_admission').cast(pl.Float64).alias('age_at_death')
+    )
+    _age_source = 'age_at_admission_fallback'
+    print("WARNING: birth_date is empty at this site; age_at_death falls back to "
+          "age_at_admission. See strobe_counts['age_source'].")
+else:
+    raise RuntimeError(
+        "Cannot determine age: birth_date is empty and age_at_admission is absent.")
+strobe_counts['age_source'] = _age_source
+print(f"Age source: {_age_source}")
 
 # Create age_75_less flag per patient_id ( age_at_death <= 75)
 age_flag_df = (
@@ -643,13 +677,19 @@ hospial_dx_filepath = f"{tables_path}/clif_hospital_diagnosis.{file_type}"
 
 # Diagnostic counts via DuckDB (streamed; previously a polars read+join that
 # segfaulted on Windows at sites with large hospital_diagnosis tables).
-all_ids_df = pd.DataFrame({"hospitalization_id": list(all_decedent_inpatient_hosp_ids)})
-age_relevant_ids_df = age_relevant_cohort.select("patient_id").unique().to_pandas()
+# DuckDB infers the column type of an EMPTY pandas frame as INTEGER, which then
+# fails to compare against VARCHAR ids ("Cannot compare values of type VARCHAR
+# and INTEGER"). Forcing str dtype keeps the comparison valid even when a site
+# legitimately has zero rows at this stage.
+all_ids_df = pd.DataFrame(
+    {"hospitalization_id": pd.Series(list(all_decedent_inpatient_hosp_ids), dtype="str")})
+age_relevant_ids_df = (
+    age_relevant_cohort.select("patient_id").unique().to_pandas().astype({"patient_id": "str"}))
 
 n_present = duckdb.sql(f"""
     SELECT COUNT(DISTINCT hospitalization_id)
     FROM read_parquet('{hospial_dx_filepath}')
-    WHERE hospitalization_id IN (SELECT hospitalization_id FROM all_ids_df)
+    WHERE CAST(hospitalization_id AS VARCHAR) IN (SELECT hospitalization_id FROM all_ids_df)
 """).fetchone()[0]
 print(f"Hospitalization IDs present in hospital_dx: {n_present} out of "
       f"{len(all_decedent_inpatient_hosp_ids)}")
@@ -659,26 +699,41 @@ n_age_relevant = duckdb.sql(f"""
     SELECT COUNT(DISTINCT hosp.patient_id)
     FROM read_parquet('{hospial_dx_filepath}') hd
     JOIN hospitalization_df hosp ON hd.hospitalization_id = hosp.hospitalization_id
-    WHERE hd.hospitalization_id IN (SELECT hospitalization_id FROM all_ids_df)
-      AND hosp.patient_id     IN (SELECT patient_id      FROM age_relevant_ids_df)
+    WHERE CAST(hd.hospitalization_id AS VARCHAR) IN (SELECT hospitalization_id FROM all_ids_df)
+      AND CAST(hosp.patient_id AS VARCHAR)     IN (SELECT patient_id      FROM age_relevant_ids_df)
 """).fetchone()[0]
 strobe_counts["5_age_relevant_in_hospital_dx"] = n_age_relevant
 
 # ---- 0) Load contraindications list from CSV ----
 contraindications_df = pl.read_csv(str(UTILS_DIR / "icd10_contraindications.csv"))
-contraindication_codes = (
-    contraindications_df
-    .with_columns([
-        pl.col("ICD-10-CM")
-            .cast(pl.Utf8)
-            .str.to_lowercase()
-            .str.replace_all(r"[.\s]", "")
-            .alias("code_norm")
-    ])
-    .select("code_norm")
-    .to_series()
-    .to_list()
+_contra_norm = contraindications_df.with_columns([
+    pl.col("ICD-10-CM").cast(pl.Utf8).str.to_lowercase()
+      .str.replace_all(r"[.\s]", "").alias("code_norm")
+])
+
+# The list has three arms: cancer, other (also neoplasms) and sepsis. They are
+# split so the sepsis arm can be switched off independently — see
+# config/donor_criteria.yaml clif_donor.apply_sepsis_exclusion.
+_APPLY_SEPSIS = bool(
+    yaml.safe_load((PROJECT_ROOT / "config/donor_criteria.yaml").read_text())
+    ["clif_donor"].get("apply_sepsis_exclusion", True)
 )
+# icd10_contraindication keeps the FULL list and is what CALC uses, so CALC is
+# unaffected by the CLIF-donor sepsis switch. A separate flag carries the arms
+# CLIF-donor actually applies.
+contraindication_codes = _contra_norm["code_norm"].to_list()
+_sepsis_codes = (
+    _contra_norm.filter(pl.col("dx_broad") == "sepsis")["code_norm"].to_list()
+)
+_clif_arms = ["cancer", "other"] + (["sepsis"] if _APPLY_SEPSIS else [])
+clif_contraindication_codes = (
+    _contra_norm.filter(pl.col("dx_broad").is_in(_clif_arms))["code_norm"].to_list()
+)
+print(f"Contraindication list: {len(contraindication_codes)} codes (CALC and "
+      f"reporting, unchanged)")
+print(f"CLIF-donor arms: {_clif_arms} -> {len(clif_contraindication_codes)} codes; "
+      f"sepsis arm {'INCLUDED' if _APPLY_SEPSIS else 'EXCLUDED'} "
+      f"({len(_sepsis_codes)} codes)")
 
 print(f"Loaded {len(contraindication_codes)} contraindication ICD-10 codes")
 
@@ -697,6 +752,8 @@ print(f"Loaded comorbidity prefixes: " +
 # ---- 1) Compute ICD-10 cause + comorbidity flags via DuckDB SQL ----
 # (all_ids_df is already bound above for the diagnostic queries.)
 contraindication_codes_df = pd.DataFrame({"code": contraindication_codes})
+sepsis_codes_df = pd.DataFrame({"code": _sepsis_codes})
+clif_contraindication_codes_df = pd.DataFrame({"code": clif_contraindication_codes})
 
 # Build SQL clauses for each comorbidity (HCV/HTN/DM/CVA) — prefix LIKE chain
 def _comorbidity_clause(key: str, prefixes: list[str]) -> str:
@@ -720,7 +777,7 @@ WITH hospital_dx_normalized AS (
         LOWER(REGEXP_REPLACE(diagnosis_code, '[.\\s]', '', 'g')) AS dx_norm,
         LOWER(diagnosis_code_format) AS sys
     FROM read_parquet('{hospial_dx_filepath}')
-    WHERE hospitalization_id IN (SELECT hospitalization_id FROM all_ids_df)
+    WHERE CAST(hospitalization_id AS VARCHAR) IN (SELECT hospitalization_id FROM all_ids_df)
 ),
 hospital_dx_flags AS (
     SELECT
@@ -729,6 +786,17 @@ hospital_dx_flags AS (
         CASE WHEN sys IN ('icd10','icd10cm') AND REGEXP_MATCHES(dx_norm, '^i6[0-9]\\w*$') THEN true ELSE false END AS icd10_cerebro,
         CASE WHEN sys IN ('icd10','icd10cm') AND REGEXP_MATCHES(dx_norm, '^(v0[1-9]|v[1-9]\\d|w\\d{{2}}|x\\d{{2}}|y[0-8]\\d)\\w*$') THEN true ELSE false END AS icd10_external,
         CASE WHEN sys IN ('icd10','icd10cm') AND dx_norm IN (SELECT code FROM contraindication_codes_df) THEN true ELSE false END AS icd10_contraindication,
+        -- Brain death. Reporting only: deliberately NOT a CLIF-donor criterion,
+        -- because it is also the face-validity check and using it both ways
+        -- would be circular.
+        CASE WHEN sys IN ('icd10','icd10cm') AND dx_norm = 'g9382' THEN true ELSE false END AS icd10_brain_death,
+        -- Sepsis kept as a reporting flag regardless of whether it is applied
+        -- as an exclusion, so the row can still be shown in Table 1.
+        CASE WHEN sys IN ('icd10','icd10cm') AND dx_norm IN (SELECT code FROM sepsis_codes_df) THEN true ELSE false END AS icd10_sepsis,
+        -- The arms CLIF-donor applies. Differs from icd10_contraindication only
+        -- when clif_donor.apply_sepsis_exclusion is false; CALC always uses the
+        -- full list above.
+        CASE WHEN sys IN ('icd10','icd10cm') AND dx_norm IN (SELECT code FROM clif_contraindication_codes_df) THEN true ELSE false END AS icd10_contraindication_clif,
         {comorbidity_select_clauses}
     FROM hospital_dx_normalized
 ),
@@ -743,6 +811,9 @@ SELECT
     BOOL_OR(icd10_cerebro) AS icd10_cerebro,
     BOOL_OR(icd10_external) AS icd10_external,
     BOOL_OR(icd10_contraindication) AS icd10_contraindication,
+    BOOL_OR(icd10_brain_death) AS icd10_brain_death,
+    BOOL_OR(icd10_sepsis) AS icd10_sepsis,
+    BOOL_OR(icd10_contraindication_clif) AS icd10_contraindication_clif,
     {comorbidity_bool_or_clauses}
 FROM hospital_dx_with_patient
 WHERE patient_id IS NOT NULL
@@ -753,6 +824,7 @@ print("Processing ICD flags with DuckDB...")
 patient_cause_flags = pl.from_pandas(duckdb.sql(query).df())
 print(f"✓ Processed {len(patient_cause_flags)} patients")
 for col in ("icd10_ischemic", "icd10_cerebro", "icd10_external", "icd10_contraindication",
+            "icd10_brain_death", "icd10_sepsis", "icd10_contraindication_clif",
             *[f"icd10_{k}" for k in comorbidity_prefixes]):
     print(f"  {col}: {patient_cause_flags[col].sum()}")
 
@@ -766,6 +838,9 @@ final_cohort_df = (
         pl.col("icd10_cerebro").fill_null(False),
         pl.col("icd10_external").fill_null(False),
         pl.col("icd10_contraindication").fill_null(False),
+        pl.col("icd10_brain_death").fill_null(False),
+        pl.col("icd10_sepsis").fill_null(False),
+        pl.col("icd10_contraindication_clif").fill_null(False),
         *_comorbidity_fill,
     ])
 )
@@ -999,7 +1074,13 @@ latest_liver AS (
         MAX(CASE WHEN lab_category = 'ast' THEN lab_value_numeric END) AS ast_value,
         MAX(CASE WHEN lab_category = 'ast' THEN lab_collect_dttm END) AS ast_dttm,
         MAX(CASE WHEN lab_category = 'alt' THEN lab_value_numeric END) AS alt_value,
-        MAX(CASE WHEN lab_category = 'alt' THEN lab_collect_dttm END) AS alt_dttm
+        MAX(CASE WHEN lab_category = 'alt' THEN lab_collect_dttm END) AS alt_dttm,
+        -- BUN and sodium added for v6 Table 1; reporting only, no criterion
+        -- depends on them.
+        MAX(CASE WHEN lab_category = 'bun' THEN lab_value_numeric END) AS bun_value,
+        MAX(CASE WHEN lab_category = 'bun' THEN lab_collect_dttm END) AS bun_dttm,
+        MAX(CASE WHEN lab_category = 'sodium' THEN lab_value_numeric END) AS sodium_value,
+        MAX(CASE WHEN lab_category = 'sodium' THEN lab_collect_dttm END) AS sodium_dttm
     FROM (
         SELECT
             hospitalization_id,
@@ -1008,7 +1089,7 @@ latest_liver AS (
             lab_collect_dttm,
             ROW_NUMBER() OVER (PARTITION BY hospitalization_id, lab_category ORDER BY lab_collect_dttm DESC) AS rn
         FROM labs_with_death
-        WHERE lab_category IN ('bilirubin_total', 'ast', 'alt')
+        WHERE lab_category IN ('bilirubin_total', 'ast', 'alt', 'bun', 'sodium')
     ) ranked
     WHERE rn = 1
     GROUP BY hospitalization_id
@@ -1022,7 +1103,11 @@ SELECT DISTINCT
     l.ast_value,
     l.ast_dttm,
     l.alt_value,
-    l.alt_dttm
+    l.alt_dttm,
+    l.bun_value,
+    l.bun_dttm,
+    l.sodium_value,
+    l.sodium_dttm
 FROM final_cohort_for_labs f
 LEFT JOIN latest_creatinine c ON f.hospitalization_id = c.hospitalization_id
 LEFT JOIN latest_liver l ON f.hospitalization_id = l.hospitalization_id
@@ -1034,6 +1119,8 @@ print(f"  Patients with creatinine: {organ_labs.filter(pl.col('creatinine_value'
 print(f"  Patients with bilirubin: {organ_labs.filter(pl.col('bilirubin_total_value').is_not_null())['patient_id'].n_unique()}")
 print(f"  Patients with AST: {organ_labs.filter(pl.col('ast_value').is_not_null())['patient_id'].n_unique()}")
 print(f"  Patients with ALT: {organ_labs.filter(pl.col('alt_value').is_not_null())['patient_id'].n_unique()}")
+print(f"  Patients with BUN: {organ_labs.filter(pl.col('bun_value').is_not_null())['patient_id'].n_unique()}")
+print(f"  Patients with sodium: {organ_labs.filter(pl.col('sodium_value').is_not_null())['patient_id'].n_unique()}")
 
 # Join organ_labs onto final_cohort_df by patient_id
 final_cohort_df = final_cohort_df.join(
@@ -1202,8 +1289,10 @@ final_cohort_df = final_cohort_df.with_columns([
         (pl.col('age_75_less')) &
         # 3. On invasive mechanical ventilation (within 48h of death)
         (pl.col('imv_48hr_expire')) &
-        # 4. No contraindications (no cancer, no severe sepsis)
-        (~pl.col('icd10_contraindication')) &
+        # 4. No contraindicating diagnosis. Which arms this covers is set by
+        #    clif_donor.apply_sepsis_exclusion in config/donor_criteria.yaml;
+        #    as of 2026-09-09 the sepsis arm is OFF, so this is cancer only.
+        (~pl.col('icd10_contraindication_clif')) &
         # 5. No positive blood cultures within 48h
         (pl.col('no_positive_culture_48hrs')) &
         # 6. Pass organ quality assessment (kidney OR liver AND BMI)
@@ -1367,12 +1456,18 @@ print("FINALIZING PATIENT-LEVEL COHORT")
 print("="*80)
 
 # Step 1: First, remove encounter-level identifiers
-print("Step 1: Removing encounter-level identifiers (hospitalization_id, encounter_block)...")
+print("Step 1: Renaming encounter-level identifiers to terminal_* ...")
+# The cohort is already deduplicated to one row per patient (their LAST death
+# encounter), so these identifiers describe the TERMINAL hospitalization. They
+# are renamed rather than dropped because downstream steps need them to attach
+# the hospital where the patient died (adt.hospital_id) and to join diagnoses.
+# The frame stays patient-level: one row per patient_id either way.
+for _src, _dst in (('hospitalization_id', 'terminal_hospitalization_id'),
+                   ('encounter_block', 'terminal_encounter_block')):
+    if _src in final_cohort_df.columns:
+        final_cohort_df = final_cohort_df.rename({_src: _dst})
+        print(f"  renamed {_src} -> {_dst}")
 columns_to_drop = []
-if 'hospitalization_id' in final_cohort_df.columns:
-    columns_to_drop.append('hospitalization_id')
-if 'encounter_block' in final_cohort_df.columns:
-    columns_to_drop.append('encounter_block')
 
 if columns_to_drop:
     final_cohort_df = final_cohort_df.drop(columns_to_drop)
@@ -1394,7 +1489,9 @@ print(f"\n✓ Final verification passed: {n_patients_final:,} unique patients")
 print(f"Final cohort shape: {final_cohort_df.shape}")
 print("="*80 + "\n")
 
-final_cohort_df.write_parquet(str(OUTPUT_INTERMEDIATE_DIR / "final_cohort_df.parquet"))
+# Canonical dtypes on write so cohorts from different sites concatenate.
+from utils.dtypes import write_parquet as _write_parquet
+_write_parquet(final_cohort_df, OUTPUT_INTERMEDIATE_DIR / "final_cohort_df.parquet")
 pd.DataFrame([strobe_counts]).to_csv(str(OUTPUT_FINAL_DIR / "strobe_counts.csv"), index=False)
 
 ################################################################################

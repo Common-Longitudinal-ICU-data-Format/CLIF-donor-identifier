@@ -632,7 +632,7 @@ def create_concentric_circles_side_by_side(csv_path, output_path=None):
     for ax, definition, subplot_label in [(ax1, 'CALC', '(A)'), (ax2, 'CLIF', '(B)')]:
         df_filtered = df[df['Definition'] == definition].sort_values('Stage')
 
-        ax.set_xlim(-1.5, 1.5)
+        ax.set_xlim(-1.9, 1.5)
         ax.set_ylim(-1.5, 1.5)
         ax.set_aspect('equal')
         ax.axis('off')
@@ -642,6 +642,7 @@ def create_concentric_circles_side_by_side(csv_path, output_path=None):
         for _, row in df_filtered.iterrows():
             steps.append({
                 'n': row['N'],
+                'pct': row['Percentage'],
                 'label': row['Filter_Description'],
                 'stage': row['Stage']
             })
@@ -702,6 +703,26 @@ def create_concentric_circles_side_by_side(csv_path, output_path=None):
                            fill=fill)
             ax.add_patch(circle)
 
+            # N (and % of stage 1) label, color-matched. Innermost
+            # (light-blue-filled) ring: label centered INSIDE the circle so
+            # it doesn't collide with the next ring out when the radii are
+            # close (e.g., CLIF red vs green). All other rings: label just
+            # outside the left edge. Stage 1 = raw N only.
+            if stage_num == 1:
+                label_text = f"{step['n']:,}"
+            else:
+                label_text = f"{step['n']:,}\n({step['pct']:.1f}%)"
+            # Gray edge (#D3D3D3) is too light for text — bump to mid-gray.
+            text_color = '#7a7a7a' if edge_color == '#D3D3D3' else edge_color
+            if stage_num == len(steps):
+                label_x, label_ha = center_x, 'center'
+            else:
+                label_x, label_ha = center_x - radius - 0.04, 'right'
+            ax.text(label_x, center_y, label_text,
+                    ha=label_ha, va='center',
+                    fontsize=11, fontweight='bold',
+                    color=text_color)
+
         # Add title (centered at base position)
         title = f"{subplot_label} {definition} Definition"
         ax.text(base_center_x, 1.35, title, ha='center', va='center',
@@ -714,11 +735,11 @@ def create_concentric_circles_side_by_side(csv_path, output_path=None):
     # Define all line stages and their labels/colors
     legend_entries = [
         (1, 'All inpatient hospital deaths', '#D3D3D3'),
-        (2, 'Patients aged <=75 at death', '#000000'),
-        (3, 'Cause consistent with donation (CALC)', '#2196F3'),  # Blue for CALC
-        (3.5, 'IMV within 48hrs (CLIF)', '#9C27B0'),  # Purple for CLIF
+        (2, 'Patients aged ≤75 at death', '#000000'),
+        (3, 'Cause consistent with donation', '#2196F3'),  # Blue for CALC
+        (3.5, 'IMV within 48h of death', '#9C27B0'),  # Purple for CLIF
         (4, 'No contraindications', '#F44336'),
-        (5, 'Pass organ quality assessment (CLIF)', '#4CAF50'),
+        (5, 'Pass organ quality assessment', '#4CAF50'),
     ]
 
     # Add all line entries first
