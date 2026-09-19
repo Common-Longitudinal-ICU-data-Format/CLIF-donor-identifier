@@ -1,6 +1,15 @@
-# 
-output/
+#
+# Output follows the CLIF project template's PHI split:
+#   output/intermediate_phi/  patient-level working data — NEVER share, never commit
+#   output/final_no_phi/      aggregate, n>=11 — shareable, and tracked so results are reviewable
+output/intermediate_phi/*
+!output/intermediate_phi/README.md
 config.json
+
+# SRTR is under a DUA and the CLIF site->CCN crosswalk de-anonymises consortium
+# sites; neither may reach a public remote.
+reference/
+shared/donor_ids*.csv
 
 __pycache__
 
@@ -11,11 +20,9 @@ __pycache__
 config_mimic.json
 config_ucmc.json
 icd10orderfiles/
-output_ucmc/
 notebook_to_script.py
 multi_site_analysis.py
 all_site_data
-output_polars/
 
 create_clean_funnels.py
 create_combined_circles.py
@@ -28,7 +35,34 @@ references/
 
 # ai files
 .claude
-output/
 shared/
 r01_all_site_data/
 .Rproj.user
+
+
+#local docs
+grant_documents/
+docs/
+manuscript/
+code/verify/
+.Rhistory
+*.Rproj
+first_review.md
+output
+output_nu/
+output_rush/
+output_ucmc/
+
+.vscode/
+FULL_REVIEW.md
+codes.csv
+config/clif_data_requirements.yaml
+config/config_nu.json
+config/config_rush.json
+config/donor_criteria.yaml
+config/hospital_crosswalk.yaml
+old_data/
+run_pipeline.py
+utils/audit.py
+utils/codes/
+utils/config.py.bak
